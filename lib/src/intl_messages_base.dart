@@ -552,8 +552,30 @@ class IntlMessages {
           return null ;
         }
       }
-      else if (ret is Future) {
-        //...
+    }
+
+    return null ;
+  }
+
+  String _description(String key) {
+    var localesOrder = _getLocalesOrder();
+
+    for (var l in localesOrder) {
+      var localizedMessage = _localizedMessages[l];
+
+      if (localizedMessage != null) {
+        var msg = localizedMessage.msg(key);
+        if (msg != null && msg.hasDescription) return msg.description ;
+      }
+    }
+
+    for ( var l in _getPossibleLocalesOrder() ) {
+      var ret = _autoFindLocalizedMessages(l) ;
+
+      if (ret is bool) {
+        if (!ret) {
+          return null ;
+        }
       }
     }
 
@@ -575,13 +597,14 @@ class MessageBuilder {
 
   String get key => _key ;
 
+  LocalizedMessage get message => this._intlMessages._msg(key);
+  String get description => this._intlMessages._description(key);
+
   String build( [ Map<String,dynamic> variables ] ) {
     var msg = message ;
     if (msg == null) return null ;
     return msg.build(variables) ;
   }
-
-  LocalizedMessage get message => this._intlMessages._msg(key);
 
   @override
   String toString() {
@@ -599,6 +622,8 @@ class LocalizedMessage {
   final Message message ;
 
   LocalizedMessage(this.locale, this.key, this.message);
+
+  String get description => message.description ;
 
   String build( [ Map<String,dynamic> variables ] ) {
     if (message == null) return null ;
@@ -933,35 +958,77 @@ class Message {
 
   String _key ;
   MessageValue _value ;
+  String _description ;
 
-  Message.keyValue(dynamic key, dynamic value) {
-    this._key = key.toString() ;
+  Message.keyValue(dynamic key, dynamic value, [String description]) {
+    this._key = key.toString().trim() ;
+
+    if (value is String) value = value.toString().trim() ;
+
     this._value = MessageValue(value) ;
+    this._description = description != null ? description.trim() : null ;
   }
 
   Message.line(String line) {
     int idx = line.indexOf('=') ;
-    this._key = line.substring(0,idx) ;
-    this._value = MessageValue( line.substring(idx+1) ) ;
+
+    this._key = line.substring(0,idx).trim() ;
+
+    var valStr = line.substring(idx+1);
+
+    int idx2 = valStr.lastIndexOf('##') ;
+
+    if (idx2 > 0) {
+      String desc = valStr.substring(idx2+2).trim() ;
+      valStr = valStr.substring(0, idx2) ;
+
+      if (desc.isNotEmpty) {
+        this._description = desc ;
+      }
+    }
+
+    this._value = MessageValue( valStr.trim() );
   }
 
   Message.entry(dynamic entry) {
+    var key ;
+    var val ;
+    var desc ;
+
     if (entry is List) {
       List list = entry ;
-      this._key = list[0];
-      this._value = MessageValue(list[1]) ;
+      key = list[0];
+      val = list[1];
+      desc =list.length > 2 ? list[2] : null ;
     }
     else if (entry is Map) {
       Map map = entry ;
-      this._key = map['key'] ;
-      this._value = MessageValue( map['value'] ) ;
+      key = map['key'] ;
+      val = map['value'] ?? map['val'] ;
+      desc = map['description'] ?? map['desc'] ;
+    }
+
+    if (key != null) {
+      this._key = key.toString().trim();
+
+      if (val is String) val = val.toString().trim();
+      this._value = MessageValue(val);
+
+      if (desc != null) {
+        String d = desc.toString().trim();
+        this._description = d.isNotEmpty ? d : null;
+      }
     }
     else {
-      throw ArgumentError.value(entry, "entry", "Invalid entry as Message") ;
+      throw ArgumentError.value(entry, "entry", "Invalid entry as Message: Not a List or a Map.") ;
     }
   }
 
   String get key => _key ;
+
+  String get description => _description ;
+
+  bool get hasDescription => _description != null && _description.isNotEmpty ;
 
   String build( [ Map<String,dynamic> variables ] ) {
     return this._value.build(variables) ;
@@ -991,6 +1058,7 @@ class Message {
 enum MessageBlockBranchType {
   ZERO,
   ONE,
+  TWO,
   MANY,
   OTHER,
   DEFAULT
@@ -1141,6 +1209,7 @@ class MessageBlockBranch {
     switch (_type) {
       case MessageBlockBranchType.ZERO: return matchesZero(variables) ;
       case MessageBlockBranchType.ONE: return matchesOne(variables) ;
+      case MessageBlockBranchType.TWO: return matchesTwo(variables) ;
       case MessageBlockBranchType.MANY: return matchesMany(variables) ;
       case MessageBlockBranchType.OTHER: return matchesOther(variables) ;
       case MessageBlockBranchType.DEFAULT: return false ;
@@ -1184,6 +1253,25 @@ class MessageBlockBranch {
     if (n == 1) return true ;
 
     return _delta(1, n) < 0.0001 ;
+  }
+
+  bool matchesTwo(Map<String,dynamic> variables) {
+    if (variables == null || variables.isEmpty) return false ;
+    var varVal = variables[_variableName] ;
+    if (varVal == null) return false ;
+
+    var nStr = "$varVal" ;
+    if ( nStr == "2" || nStr.toLowerCase() == "two" ) return true ;
+
+    double n = double.tryParse(nStr) ;
+
+    if (n == null) {
+      return nStr == "2.0" || nStr == "2,0" ;
+    }
+
+    if (n == 2) return true ;
+
+    return _delta(2, n) < 0.0001 ;
   }
 
   bool matchesMany(Map<String,dynamic> variables) {

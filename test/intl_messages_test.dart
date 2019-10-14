@@ -25,13 +25,13 @@ void main() {
     });
 
     test('Message.keyValue[plural]', () {
-      var msg = Message.keyValue("foo", '{zero[n]:There are no emails for\\|to you \$user.|one[n]:You have 1 email.|many[n]:You have \$n emails left.|other[n]:Odd number of emails: \$n}') ;
+      var msg = Message.keyValue("foo", '{zero[n]:There are no emails for\\|to you \$user.|one[n]:You have 1 email.|two[n]:A pair of e-mails left.|many[n]:You have \$n emails left.|other[n]:Odd number of emails: \$n}') ;
 
       expect( msg.key , equals("foo") );
 
       expect( msg.build({'n': 0, 'user': 'John'}) , equals("There are no emails for|to you John.") );
       expect( msg.build({'n': 1}) , equals("You have 1 email.") );
-      expect( msg.build({'n': 2}) , equals("You have 2 emails left.") );
+      expect( msg.build({'n': 2}) , equals("A pair of e-mails left.") );
       expect( msg.build({'n': 10}) , equals("You have 10 emails left.") );
       expect( msg.build({'n': -1}) , equals("Odd number of emails: -1") );
       expect( msg.build({'n': -2}) , equals("Odd number of emails: -2") );
@@ -155,6 +155,8 @@ void main() {
     });
 
     test('IntlMessages.registerMessagesResourcesContents', () async {
+      IntlLocale.setDefaultLocale("EN") ;
+
       var package = IntlMessages.package("test-rsc1");
       expect( package.getRegisteredLocales() , equals( [] ) );
 
@@ -173,6 +175,8 @@ void main() {
     });
 
     test('IntlMessages.findAndRegisterMessagesResources', () async {
+      IntlLocale.setDefaultLocale("EN") ;
+
       var package = IntlMessages.package("test-rsc2");
       expect( package.getRegisteredLocales() , equals( [] ) );
 
@@ -188,6 +192,8 @@ void main() {
     });
 
     test('IntlMessages.findAndRegisterMessagesResourcesWithLocales', () async {
+      IntlLocale.setDefaultLocale("EN") ;
+
       var package = IntlMessages.package("test-rsc3");
       expect( package.getRegisteredLocales() , equals( [] ) );
 
@@ -203,6 +209,9 @@ void main() {
     });
 
     test('IntlMessages.discover', () async {
+
+      IntlLocale.setDefaultLocale("EN") ;
+
       var package = IntlMessages.package("test-disc1");
       expect( package.getRegisteredLocales() , equals( [] ) );
 
@@ -230,6 +239,7 @@ void main() {
       expect( onRegisterLocalizedMessages , equals(['en']) );
 
       expect( msg.build() , equals("x") );
+      expect( msg.description , equals("Some description") );
 
       //////////
 
@@ -247,6 +257,8 @@ void main() {
     });
 
     test('IntlMessages.package[test]', () {
+
+      IntlLocale.setDefaultLocale("EN") ;
 
       var packageTest1 = IntlMessages.package("test1");
       var packageTest2 = IntlMessages.package("test2");
@@ -293,6 +305,47 @@ void main() {
       expect( msgB2.build({'n': 200}) , equals("fy:200") );
 
     });
+
+    test('IntlMessages.comments', () {
+
+      IntlLocale.setDefaultLocale("EN") ;
+
+      var packageTest1 = IntlMessages.package("comments1");
+
+      expect( packageTest1.getRegisteredLocales() , equals( [] ) );
+
+      var localeEN = IntlLocale.code('en') ;
+      var localeFR = IntlLocale('fr') ;
+
+      packageTest1.registerMessages(localeEN, "foo=x:\$n##Desc foo\nfuz=fx:\$n##Desc fuz!");
+
+      packageTest1.registerMessages(localeFR.locale, "foo=a:\$n##Desc foo FR\nfuz=fa:\$n");
+
+      var msgA1 = packageTest1.msg("foo") ;
+      var msgB1 = packageTest1.msg("fuz") ;
+
+      expect( msgA1.key , equals("foo") );
+
+      expect( msgA1.build() , equals("x:") );
+
+      expect( msgA1.description , equals("Desc foo") );
+      expect( msgB1.description , equals("Desc fuz!") );
+
+      expect( msgA1.build({'n': 10}) , equals("x:10") );
+      expect( msgB1.build({'n': 100}) , equals("fx:100") );
+
+      IntlLocale.setDefaultLocale("FR") ;
+
+      expect( msgA1.build() , equals("a:") );
+
+      expect( msgA1.description , equals("Desc foo FR") );
+      expect( msgB1.description , equals("Desc fuz!") );
+
+      expect( msgA1.build({'n': 10}) , equals("a:10") );
+      expect( msgB1.build({'n': 100}) , equals("fa:100") );
+
+    });
+
 
   });
 }
