@@ -1,32 +1,106 @@
-import 'package:intl/intl.dart';
-import 'package:resource/resource.dart' show Resource ;
-import 'package:enum_to_string/enum_to_string.dart';
-
-import 'package:swiss_knife/src/locales.dart' show ALL_LOCALES_CODES ;
-
 import 'dart:convert' ;
 
-import 'package:swiss_knife/swiss_knife.dart';
+import 'package:intl/intl.dart';
+import 'package:resource_portable/resource.dart' show Resource ;
+import 'package:enum_to_string/enum_to_string.dart';
 
-class IntlResourceContent {
-  final String locale ;
+import 'package:swiss_knife/swiss_knife.dart' show EventStream ;
+
+import 'locales.dart';
+
+class ResourceContentCache {
+
+  Map<Uri, ResourceContent> _resources = {} ;
+
+  int get size => _resources.length ;
+
+  bool contains(dynamic resource) {
+    return get(resource) != null ;
+  }
+
+  ResourceContent get(dynamic resource) {
+    if (resource == null) return null ;
+
+    ResourceContent resourceContent = ResourceContent.dynamic(resource) ;
+
+    var cached = _resources[ resourceContent.uri ] ;
+    if (cached != null) {
+      if ( resourceContent.hasContent && !cached.hasContent ) {
+        cached._content = resourceContent._content ;
+      }
+
+      return cached ;
+    }
+
+    _resources[ resourceContent.uri ] = resourceContent ;
+
+    return resourceContent ;
+  }
+
+  ResourceContent remove(dynamic resource) {
+    if (resource == null) return null ;
+
+    ResourceContent resourceContent = ResourceContent.dynamic(resource) ;
+
+    var cached = _resources.remove( resourceContent.uri ) ;
+    return cached ;
+  }
+
+  void clear() {
+    _resources.clear() ;
+  }
+
+}
+
+class ResourceContent {
   final Resource resource ;
 
-  IntlResourceContent(this.locale, this.resource, [this._content]) ;
+  ResourceContent(this.resource, [this._content]) ;
+
+  factory ResourceContent.dynamic( dynamic rsc ) {
+    if (rsc is ResourceContent) return rsc ;
+
+    if (rsc is Resource) return ResourceContent(rsc) ;
+
+    return ResourceContent( Resource(rsc) ) ;
+  }
 
   String _content ;
+  Future<String> _readFuture ;
 
   Future<String> getContent() async {
-    if (_content != null) return _content ;
-    _content = await resource.readAsString() ;
-    return Future.value(_content) ;
+    if ( hasContent ) return _content ;
+
+    if ( _readFuture == null) {
+
+      _readFuture = resource.readAsString().catchError( (e) {
+        return null ;
+      } ).then( (c) {
+        _content = c ;
+        return c ;
+      } ) ;
+
+    }
+
+    return _readFuture ;
   }
+
+  bool get hasContent => _content != null ;
 
   Uri get uri => resource.uri ;
 
 }
 
+class IntlResourceContent extends ResourceContent {
+  final String locale ;
+
+  IntlResourceContent(this.locale, Resource resource, [String content]) : super(resource, content) ;
+
+}
+
 class IntlResourceDiscover {
+
+  final ResourceContentCache _resourceContentCache = ResourceContentCache() ;
 
   String _resourcePathPrefix ;
   String _resourcePathSuffix ;
@@ -42,6 +116,80 @@ class IntlResourceDiscover {
   String get resourcePathSuffix => _resourcePathSuffix;
   String get resourcePathPrefix => _resourcePathPrefix;
 
+  List<IntlLocale> _languagesToLookup ;
+
+  Future<List<String>> _getLanguagesCodesToLookup() async {
+    var list = await _getLanguagesToLookup() ;
+    return list.map( (l) => l.code ).toList() ;
+  }
+
+  Future<List<IntlLocale>> _getLanguagesToLookup() async {
+    if (_languagesToLookup != null) return _languagesToLookup ;
+
+    List<IntlLocale> list = List.from(_ALL_LOCALES) ;
+
+    List<IntlLocale> defined = await _getDefinedLocales() ;
+    if (defined != null && defined.isNotEmpty) {
+      list.retainWhere((l) => defined.contains(l));
+    }
+
+    _languagesToLookup = list ;
+
+    return _languagesToLookup ;
+  }
+
+  Future<List<String>> _getDefinedLocalesCodes() async {
+    var list = await _getDefinedLocales() ;
+    return list.map( (l) => l.code ).toList() ;
+  }
+
+  List<IntlLocale> _definedLanguages ;
+
+  Future<List<IntlLocale>> _getDefinedLocales() async {
+    if ( _definedLanguages != null ) return _definedLanguages ;
+
+    List<String> list = await _findDefinedLocales() ;
+
+    if (list != null) {
+      _definedLanguages = list.map( (l) => IntlLocale(l) ).toList() ;
+    }
+    else {
+      _definedLanguages = [] ;
+    }
+
+    return _definedLanguages ;
+  }
+
+  Future<List<String>> _findDefinedLocales() async {
+    String resourcePath = "${_resourcePathPrefix}locales$_resourcePathSuffix" ;
+
+    print("Find defined locales> $resourcePath") ;
+
+    Resource resource = Resource(resourcePath) ;
+
+    ResourceContent resourceContent = _resourceContentCache.get(resource) ;
+
+    try {
+      String content ;
+      try {
+        content = await resourceContent.getContent() ;
+      }
+      catch(e) {
+        //print("Find error: $e");
+      }
+
+      if (content != null) {
+        content = content.trim() ;
+        if (content.isEmpty) return Future.value(null) ;
+        var list = content.split( RegExp(r'[,;\s\|]+', multiLine: true) ).where( (l) => l.isNotEmpty ).toList();
+        return list ;
+      }
+    }
+    catch (e) {}
+
+    return Future.value(null) ;
+  }
+
   int _findCount = 0 ;
 
   int get findCount => _findCount;
@@ -49,6 +197,8 @@ class IntlResourceDiscover {
   Map<String,IntlResourceContent> _findCache = {} ;
 
   void clearFindCache() {
+    _languagesToLookup = null ;
+    _definedLanguages = null ;
     _findCache.clear() ;
   }
 
@@ -58,13 +208,24 @@ class IntlResourceDiscover {
     var cached = _findCache[locale] ;
     if (cached != null) return cached ;
 
+    var languagesToLookup = await _getLanguagesCodesToLookup() ;
+    if ( !languagesToLookup.contains(locale) ) return Future.value(null) ;
+
     String resourcePath = "$_resourcePathPrefix$locale$_resourcePathSuffix" ;
     Resource resource = Resource(resourcePath) ;
+
+    var resourceContent = _resourceContentCache.get(resource) ;
 
     try {
       _findCount++ ;
 
-      String content = await resource.readAsString() ;
+      String content ;
+      try {
+        content = await resourceContent.getContent() ;
+      }
+      catch(e) {
+        //print("Find error: $e");
+      }
 
       if (content != null) {
         var resourceContent = IntlResourceContent(locale, resource, content);
@@ -78,7 +239,7 @@ class IntlResourceDiscover {
   }
 
   Future<List<IntlResourceContent>> findAll() async {
-    return findWithLocales( _ALL_LOCALES_CODES ) ;
+    return findWithLocales( await _getLanguagesCodesToLookup() ) ;
   }
 
   Future<List<IntlResourceContent>> findWithLocales(List<String> locales) async {
@@ -134,6 +295,12 @@ class IntlMessages {
     return instance ;
   }
 
+  static void _notifySetLocale(String locale) {
+    for (var instance in instances.values) {
+      instance._defineLocalesOrder();
+    }
+  }
+
   //////////////////////////////
 
   final String packageName ;
@@ -148,6 +315,10 @@ class IntlMessages {
   Future findAndRegisterMessagesResourcesWithLocales(IntlResourceDiscover discover, List<String> locales) async {
     List<IntlResourceContent> resources = await discover.findWithLocales(locales) ;
     return registerMessagesResourcesContents(resources) ;
+  }
+
+  void initialize() {
+    autoDiscover();
   }
 
   /////////////////////////////////////////////////
@@ -244,7 +415,11 @@ class IntlMessages {
       List<Message> messages = [] ;
 
       for ( dynamic entry in list ) {
-        messages.add( Message.entry(entry) ) ;
+        try {
+          var message = Message.entry(entry);
+          messages.add( message ) ;
+        }
+        catch (ignore) { }
       }
 
       return messages ;
@@ -260,7 +435,13 @@ class IntlMessages {
     List<Message> messages = [] ;
 
     for (String line in lines) {
-      messages.add( Message.line(line) ) ;
+      if (line.trim().isEmpty) continue ;
+
+      try {
+        var message = Message.line(line);
+        messages.add(message);
+      }
+      catch (ignore) { }
     }
 
     return messages ;
@@ -328,7 +509,7 @@ class IntlMessages {
     return _possibleLocalesOrder ;
   }
 
-  Future<bool> _defineLocalesOrder() async {
+  Future<bool> _defineLocalesOrder() {
     List<IntlLocale> locales = List.from( _localizedMessages.keys ) ;
     locales.sort() ;
 
@@ -390,7 +571,43 @@ class IntlMessages {
       return autoDiscover() ;
     }
 
-    return false ;
+    return Future.value(false) ;
+  }
+
+  IntlMessages _overrideMessages ;
+
+  IntlMessages get overrideMessages => _overrideMessages;
+
+  set overrideMessages(IntlMessages value) {
+    if (value != this) {
+      _overrideMessages = value;
+
+      if (value != null) {
+        value.onRegisterLocalizedMessages.listen( (locale) {
+          if ( locale != null && _overrideMessages == value ) {
+            this.onRegisterLocalizedMessages.add(locale) ;
+          }
+        } );
+      }
+    }
+  }
+
+  IntlMessages _fallbackMessages ;
+
+  IntlMessages get fallbackMessages => _fallbackMessages;
+
+  set fallbackMessages(IntlMessages value) {
+    if (value != this) {
+      _fallbackMessages = value;
+
+      if (value != null) {
+        value.onRegisterLocalizedMessages.listen( (locale) {
+          if ( locale != null && _fallbackMessages == value ) {
+            this.onRegisterLocalizedMessages.add(locale) ;
+          }
+        } );
+      }
+    }
   }
 
   IntlFallbackLanguage _fallbackLanguages = IntlFallbackLanguage() ;
@@ -423,8 +640,10 @@ class IntlMessages {
     _localizedMessages[ intlLocale ] = localizedMessages ;
     _defineLocalesOrder() ;
 
-    onRegisterLocalizedMessages.add( intlLocale.locale ) ;
-    onRegisterLocalizedMessagesGlobal.add( intlLocale.locale ) ;
+    print("registerLocalizedMessages> $intlLocale");
+
+    onRegisterLocalizedMessages.add( intlLocale.code ) ;
+    onRegisterLocalizedMessagesGlobal.add( intlLocale.code ) ;
   }
 
   List<IntlLocale> getRegisteredIntLocales() {
@@ -432,7 +651,7 @@ class IntlMessages {
   }
 
   List<String> getRegisteredLocales() {
-    return getRegisteredIntLocales().map( (l) => l.locale ).toList() ;
+    return getRegisteredIntLocales().map( (l) => l.code ).toList() ;
   }
 
   final Set<IntlResourceDiscover> _resourceDiscovers = {} ;
@@ -471,6 +690,25 @@ class IntlMessages {
     }
 
     return found ;
+  }
+
+  Future<bool> autoDiscoverLocale( dynamic locale ) async {
+    if ( _resourceDiscovers.isEmpty ) return false ;
+
+    IntlLocale intlLocale = IntlLocale(locale) ;
+
+    Future<bool> futureFound = _autoFindLocalizedMessagesAsync(intlLocale) ;
+
+    Future<bool> futureFoundOverride = _overrideMessages != null ? _overrideMessages.autoDiscoverLocale(locale) : Future.value(false) ;
+    Future<bool> futureFoundFallback = _fallbackMessages != null ? _fallbackMessages.autoDiscoverLocale(locale) : Future.value(false) ;
+
+    bool found = await futureFound ;
+    bool foundOverride  = await futureFoundOverride ;
+    bool foundFallback  = await futureFoundFallback ;
+
+    bool discovered = found || foundOverride || foundFallback;
+
+    return discovered ;
   }
 
   void _clearAutoFindLocalizedMessagesLocales() {
@@ -515,7 +753,7 @@ class IntlMessages {
 
   Future<bool> _autoFindLocalizedMessagesImpl(IntlLocale locale) async {
     for (var r in _resourceDiscovers) {
-      var resource = await r.find(locale.locale) ;
+      var resource = await r.find(locale.code) ;
 
       if (resource != null) {
         var registered = await registerMessagesResourceContent(resource) ;
@@ -528,11 +766,21 @@ class IntlMessages {
     return false ;
   }
 
+  String buildMsg(String key, [ Map<String,dynamic> variables ]) {
+    return msg(key).build(variables) ;
+  }
+
   MessageBuilder msg(String key) {
     return MessageBuilder._(this, key) ;
   }
 
   LocalizedMessage _msg(String key) {
+
+    if (_overrideMessages != null) {
+      var msg = _overrideMessages._msg(key) ;
+      if (msg != null) return msg ;
+    }
+
     var localesOrder = _getLocalesOrder();
 
     for (var l in localesOrder) {
@@ -544,17 +792,16 @@ class IntlMessages {
       }
     }
 
-    for ( var l in _getPossibleLocalesOrder() ) {
-      var ret = _autoFindLocalizedMessages(l) ;
-
-      if (ret is bool) {
-        if (!ret) {
-          return null ;
-        }
-      }
+    var fallbackMsg ;
+    if (fallbackMessages != null) {
+      fallbackMsg = fallbackMessages._msg(key) ;
     }
 
-    return null ;
+    for ( var l in _getPossibleLocalesOrder() ) {
+      _autoFindLocalizedMessages(l) ;
+    }
+
+    return fallbackMsg ;
   }
 
   String _description(String key) {
@@ -584,6 +831,13 @@ class IntlMessages {
 
   @override
   MessageBuilder operator [](String key) => msg(key) ;
+
+
+
+  @override
+  String toString() {
+    return 'IntlMessages{packageName: $packageName, locale: $currentLocale}';
+  }
 
 }
 
@@ -690,7 +944,7 @@ int _getLocaledIndex(String locale) {
 
   IntlLocale intlLocale = IntlLocale.code(locale) ;
 
-  locale = intlLocale.locale ;
+  locale = intlLocale.code ;
 
   idx = _ALL_LOCALES_CODES.indexOf(locale) ;
   if (idx >= 0) return idx ;
@@ -724,11 +978,17 @@ abstract class _IntlDefaultLocale {
     _setLocale(locale) ;
   }
 
+  static void initialize() {
+    _initialize() ;
+  }
+
   static bool _initialized = false ;
 
   static void _initialize() {
     if (_initialized) return ;
     _initialized = true ;
+
+    LocalesManager.onDefineLocaleLibraryIntegration.listen( (l) => _setLocale(l) ) ;
 
     var defaultLocale = Intl.defaultLocale ;
 
@@ -747,9 +1007,6 @@ abstract class _IntlDefaultLocale {
       }
     }
 
-    if ( _locale == null ) {
-      LocalesManager.onDefineLocaleGlobal.listen( (l) => _setLocale(l) ) ;
-    }
   }
 
   static final EventStream<String> onDefineLocale = EventStream() ;
@@ -758,7 +1015,9 @@ abstract class _IntlDefaultLocale {
     if (locale == null) return ;
 
     IntlLocale intlLocale = IntlLocale(locale) ;
-    _locale = intlLocale.locale ;
+    _locale = intlLocale.code ;
+
+    IntlMessages._notifySetLocale(_locale) ;
 
     onDefineLocale.add(_locale) ;
   }
@@ -880,7 +1139,7 @@ class IntlLocale implements Comparable<IntlLocale> {
 
   bool get hasRegion => _region.isNotEmpty ;
 
-  String get locale => hasRegion ? "${_language}_$_region" : _language ;
+  String get code => hasRegion ? "${_language}_$_region" : _language ;
 
   @override
   bool operator ==(Object other) =>
@@ -898,15 +1157,15 @@ class IntlLocale implements Comparable<IntlLocale> {
   int compareTo(IntlLocale o) {
     if (this == o) return 0 ;
 
-    int idx1 = _getLocaledIndex( this.locale ) ;
-    int idx2 = _getLocaledIndex( o.locale ) ;
+    int idx1 = _getLocaledIndex( this.code ) ;
+    int idx2 = _getLocaledIndex( o.code ) ;
 
     return idx1.compareTo(idx2) ;
   }
 
   @override
   String toString() {
-    return 'IntlLocale{$locale}';
+    return 'IntlLocale{$code}';
   }
 
 }

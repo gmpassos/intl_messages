@@ -270,9 +270,9 @@ void main() {
       var localeFR = IntlLocale('fr') ;
 
       packageTest1.registerMessages(localeEN, "foo=x:\$n\nfuz=fx:\$n");
-      packageTest2.registerMessages(localeEN.locale, "foo=y:\$n\nfuz=fy:\$n");
+      packageTest2.registerMessages(localeEN.code, "foo=y:\$n\nfuz=fy:\$n");
 
-      packageTest1.registerMessages(localeFR.locale, "foo=a:\$n");
+      packageTest1.registerMessages(localeFR.code, "foo=a:\$n");
       packageTest2.registerMessages(localeFR, "foo=b:\$n");
       
       var msgA1 = packageTest1.msg("foo") ;
@@ -319,7 +319,7 @@ void main() {
 
       packageTest1.registerMessages(localeEN, "foo=x:\$n##Desc foo\nfuz=fx:\$n##Desc fuz!");
 
-      packageTest1.registerMessages(localeFR.locale, "foo=a:\$n##Desc foo FR\nfuz=fa:\$n");
+      packageTest1.registerMessages(localeFR.code, "foo=a:\$n##Desc foo FR\nfuz=fa:\$n");
 
       var msgA1 = packageTest1.msg("foo") ;
       var msgB1 = packageTest1.msg("fuz") ;
