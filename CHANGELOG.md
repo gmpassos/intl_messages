@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Moved locales from swiss_knife to local source.
+- Using package resource_portable to be Web compatible.
 
 ## 1.1.0
 
