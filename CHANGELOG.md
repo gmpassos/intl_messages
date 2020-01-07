@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Add Author and License to README.
+
 ## 1.1.1
 
 - Moved locales from swiss_knife to local source.

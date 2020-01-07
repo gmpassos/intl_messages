@@ -87,3 +87,13 @@ Here's an example of plural usage with variable `n`:
 Please file feature requests and bugs at the [issue tracker][tracker].
 
 [tracker]: https://github.com/gmpassos/intl_messages/issues
+
+## Author
+
+Graciliano M. Passos: [gmpassos@GitHub][github].
+
+[github]: https://github.com/gmpassos
+
+## License
+
+Dart free & open-source [license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
