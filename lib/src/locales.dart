@@ -547,15 +547,15 @@ Map<String,String> _ALL_LOCALES = {
 } ;
 
 List<String> LATIN_LANGUAGES() {
-  return new List.from(_LATIN_LANGUAGES) ;
+  return List.from(_LATIN_LANGUAGES) ;
 }
 
 Map<String,String> ALL_LOCALES() {
-  return new Map.from(_ALL_LOCALES) ;
+  return Map.from(_ALL_LOCALES) ;
 }
 
 List<String> ALL_LOCALES_CODES() {
-  return new List.from(_ALL_LOCALES.keys) ;
+  return List.from(_ALL_LOCALES.keys) ;
 }
 
 String getLocaleName(String locale, {String defaultName, bool nativeName = false, String nativeLocale, bool preserveLatinNames = true}) {
@@ -616,7 +616,7 @@ class LocaleInitializer {
 
   LocaleInitializer(this.initializeFunction, this._locales) {
 
-    this._completer = new Completer() ;
+    this._completer = Completer() ;
 
     _initializeIdx(0) ;
   }
@@ -636,7 +636,7 @@ class LocaleInitializer {
     var future = initializeFunction(locale) ;
 
     if (future == null) {
-      future = new Future.value(false) ;
+      future = Future.value(false) ;
     }
 
     future.then((ok) {
@@ -644,11 +644,11 @@ class LocaleInitializer {
     });
   }
 
-  final EventStream<String> onInitializeLocale = new EventStream() ;
-  final EventStream<String> onFailLocale = new EventStream() ;
+  final EventStream<String> onInitializeLocale = EventStream() ;
+  final EventStream<String> onFailLocale = EventStream() ;
 
   List<String> _failedLocales = [] ;
-  List<String> get failedLocales => new List.from(_failedLocales) ;
+  List<String> get failedLocales => List.from(_failedLocales) ;
 
   String _initializedLocale ;
   String get initializedLocale => _initializedLocale ;
@@ -704,9 +704,9 @@ abstract class LocalesManager {
 
   static List<LocalesManager> instancesInitialized() => List<LocalesManager>.from(_instances)..retainWhere( (l) => l.getInitializedLocales().isNotEmpty ) ;
 
-  static final EventStream<String> onDefineLocaleLibraryIntegration = new EventStream() ;
+  static final EventStream<String> onDefineLocaleLibraryIntegration = EventStream() ;
 
-  static final EventStream<String> onDefineLocaleGlobal = new EventStream() ;
+  static final EventStream<String> onDefineLocaleGlobal = EventStream() ;
 
   //////////////////////////////////////////////////////
 
@@ -757,7 +757,7 @@ abstract class LocalesManager {
   }
 
   Map<String, String> getInitializedLocalesAlternatives() {
-    return new Map.from(_localesAlternatives) ;
+    return Map.from(_localesAlternatives) ;
   }
 
   String getCurrentLocale() {
@@ -767,7 +767,7 @@ abstract class LocalesManager {
   Future<bool> setPreferredLocale(String locale) {
     if (locale == null) {
       print("setPreferredLocale: null locale!") ;
-      return new Future.value(false) ;
+      return Future.value(false) ;
     }
 
     print("setPreferredLocale: $locale") ;
@@ -817,7 +817,7 @@ abstract class LocalesManager {
     if ( isInitializedLocale(locale) ) {
       print("Locale already initialized: $locale") ;
       _defineInitializedLocale(locale) ;
-      return new Future.value(true);
+      return Future.value(true);
     }
     else if ( isFailedLocale(locale) ) {
       var alternative = getLocaleInitializedAlternative(locale) ;
@@ -825,20 +825,20 @@ abstract class LocalesManager {
       if (alternative != null) {
         print("Locale already initialized with alternative: $locale -> $alternative") ;
         _defineInitializedLocale(alternative) ;
-        return new Future.value(true);
+        return Future.value(true);
       }
       else {
         print("Locale already initialized and failed: $locale") ;
-        return new Future.value(false);
+        return Future.value(false);
       }
     }
 
     List<String> possibleLocalesSequence = getLocalesSequence(locale) ;
 
-    var localeInitializer = new LocaleInitializer( (s) => _callInitializeLocale(s, true) , possibleLocalesSequence) ;
+    var localeInitializer = LocaleInitializer( (s) => _callInitializeLocale(s, true) , possibleLocalesSequence) ;
 
     if (localeInitializer == null) {
-      return new Future.value(false) ;
+      return Future.value(false) ;
     }
 
     localeInitializer.onFailLocale.listen((l) {
@@ -873,7 +873,7 @@ abstract class LocalesManager {
     _defineInitializedLocale(locale) ;
   }
 
-  final EventStream<String> onDefineLocale = new EventStream() ;
+  final EventStream<String> onDefineLocale = EventStream() ;
 
   void _defineInitializedLocale(String locale) {
     Intl.defaultLocale = locale ;
@@ -924,15 +924,15 @@ abstract class LocalesManager {
 
   Future<bool> initializeAllLocales() {
     var notInitializedLocales = getNotInitializedLocales(true) ;
-    if (notInitializedLocales.isEmpty) return new Future.value(false) ;
+    if (notInitializedLocales.isEmpty) return Future.value(false) ;
 
     Map<String, int> initializations = {} ;
 
-    Completer<bool> completer = new Completer();
+    Completer<bool> completer = Completer();
 
     List<String> initOrder = getLocalesSequence( getCurrentLocale() ) ;
 
-    for (var l in new List.from(initOrder)) {
+    for (var l in List.from(initOrder)) {
       var similarLocales = getSimilarLocales(l);
       similarLocales.removeWhere((s) => initOrder.contains(s)) ;
       initOrder.addAll(similarLocales) ;
@@ -1001,7 +1001,7 @@ abstract class LocalesManager {
   }
 
   Future<bool> _callInitializeLocale(String locale, bool strictLocale) {
-    if (locale == null) throw new StateError("Null Locale!") ;
+    if (locale == null) throw StateError("Null Locale!") ;
 
     var future = initializeLocaleFunction(locale) ;
     if (future == null) return null ;

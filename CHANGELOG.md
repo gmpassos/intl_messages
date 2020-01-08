@@ -1,3 +1,11 @@
+## 1.1.3
+
+- Upgrade dependencies.
+    - intl: ^0.16.1
+    - enum_to_string: ^1.0.8
+    - swiss_knife: ^2.2.1
+- Code analysis.
+
 ## 1.1.2
 
 - Add Author and License to README.

@@ -185,7 +185,7 @@ class IntlResourceDiscover {
         return list ;
       }
     }
-    catch (e) {}
+    catch (ignore) { }
 
     return Future.value(null) ;
   }
@@ -233,7 +233,7 @@ class IntlResourceDiscover {
         return resourceContent ;
       }
     }
-    catch (e) {}
+    catch (ignore) { }
 
     return Future.value(null) ;
   }
