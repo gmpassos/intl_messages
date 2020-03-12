@@ -1,3 +1,8 @@
+## 1.1.4
+
+- sdk: '>=2.6.0 <3.0.0'
+- swiss_knife: ^2.3.3
+
 ## 1.1.3
 
 - Upgrade dependencies.
