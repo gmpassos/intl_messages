@@ -10,7 +10,7 @@ dependencies:
   intl: ^0.16.1
   resource_portable: ^2.1.6
   enum_to_string: ^1.0.8
-  swiss_knife: ^2.3.3
+  swiss_knife: ^2.3.4
     #path: ../swiss_knife
 
 dev_dependencies:
