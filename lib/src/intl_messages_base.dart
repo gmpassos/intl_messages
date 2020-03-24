@@ -4,92 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:resource_portable/resource.dart' show Resource ;
 import 'package:enum_to_string/enum_to_string.dart';
 
-import 'package:swiss_knife/swiss_knife.dart' show EventStream ;
+import 'package:swiss_knife/swiss_knife.dart' ;
 
 import 'locales.dart';
 
-class ResourceContentCache {
-
-  Map<Uri, ResourceContent> _resources = {} ;
-
-  int get size => _resources.length ;
-
-  bool contains(dynamic resource) {
-    return get(resource) != null ;
-  }
-
-  ResourceContent get(dynamic resource) {
-    if (resource == null) return null ;
-
-    ResourceContent resourceContent = ResourceContent.dynamic(resource) ;
-
-    var cached = _resources[ resourceContent.uri ] ;
-    if (cached != null) {
-      if ( resourceContent.hasContent && !cached.hasContent ) {
-        cached._content = resourceContent._content ;
-      }
-
-      return cached ;
-    }
-
-    _resources[ resourceContent.uri ] = resourceContent ;
-
-    return resourceContent ;
-  }
-
-  ResourceContent remove(dynamic resource) {
-    if (resource == null) return null ;
-
-    ResourceContent resourceContent = ResourceContent.dynamic(resource) ;
-
-    var cached = _resources.remove( resourceContent.uri ) ;
-    return cached ;
-  }
-
-  void clear() {
-    _resources.clear() ;
-  }
-
-}
-
-class ResourceContent {
-  final Resource resource ;
-
-  ResourceContent(this.resource, [this._content]) ;
-
-  factory ResourceContent.dynamic( dynamic rsc ) {
-    if (rsc is ResourceContent) return rsc ;
-
-    if (rsc is Resource) return ResourceContent(rsc) ;
-
-    return ResourceContent( Resource(rsc) ) ;
-  }
-
-  String _content ;
-  Future<String> _readFuture ;
-
-  Future<String> getContent() async {
-    if ( hasContent ) return _content ;
-
-    if ( _readFuture == null) {
-
-      _readFuture = resource.readAsString().catchError( (e) {
-        return null ;
-      } ).then( (c) {
-        _content = c ;
-        return c ;
-      } ) ;
-
-    }
-
-    return _readFuture ;
-  }
-
-  bool get hasContent => _content != null ;
-
-  Uri get uri => resource.uri ;
-
-}
 
 class IntlResourceContent extends ResourceContent {
   final String locale ;
@@ -144,11 +62,18 @@ class IntlResourceDiscover {
   }
 
   List<IntlLocale> _definedLanguages ;
+  Future<List<String>> _findDefinedLocalesFuture ;
 
   Future<List<IntlLocale>> _getDefinedLocales() async {
     if ( _definedLanguages != null ) return _definedLanguages ;
 
-    List<String> list = await _findDefinedLocales() ;
+    if ( _findDefinedLocalesFuture == null ) {
+      _findDefinedLocalesFuture = _findDefinedLocales() ;
+    }
+
+    List<String> list = await _findDefinedLocalesFuture ;
+
+    if ( _definedLanguages != null ) return _definedLanguages ;
 
     if (list != null) {
       _definedLanguages = list.map( (l) => IntlLocale(l) ).toList() ;
@@ -156,6 +81,8 @@ class IntlResourceDiscover {
     else {
       _definedLanguages = [] ;
     }
+
+    _findDefinedLocalesFuture = null ;
 
     return _definedLanguages ;
   }
@@ -682,7 +609,9 @@ class IntlMessages {
 
     bool found = false ;
 
-    for ( var l in _getPossibleLocalesOrder() ) {
+    var possibleLocalesOrder = _getPossibleLocalesOrder();
+
+    for ( var l in possibleLocalesOrder ) {
       var ret = await _autoFindLocalizedMessagesAsync(l) ;
       if (ret) {
         found = true ;
@@ -1120,8 +1049,7 @@ class IntlLocale implements Comparable<IntlLocale> {
       String reg = locale.length > 1 ? locale[1] : null ;
       return IntlLocale.langReg(lang, reg) ;
     }
-
-    if ( locale is Map ) {
+    else if ( locale is Map ) {
       if ( locale.isEmpty ) return IntlLocale.getDefaultIntlLocale() ;
 
       String lang = locale['language'] ?? locale['lang'] ;
@@ -1131,7 +1059,7 @@ class IntlLocale implements Comparable<IntlLocale> {
       return IntlLocale.langReg(lang, reg) ;
     }
 
-    return IntlLocale.code( "$locale" ) ;
+    return IntlLocale.code( '$locale' ) ;
   }
 
   String get language => _language;

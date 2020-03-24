@@ -7,6 +7,8 @@ import 'package:intl/message_lookup_by_library.dart';
 import 'package:intl/src/intl_helpers.dart';
 import 'package:swiss_knife/swiss_knife.dart';
 
+import 'intl_messages_base.dart';
+
 import 'locales_generic.dart'
 if (dart.library.html) "locales_browser.dart" ;
 
@@ -695,7 +697,9 @@ class LocaleOption {
 
 }
 
-typedef Future<bool> InitializeLocaleFunction(String locale) ;
+typedef InitializeLocaleFunction = Future<bool> Function(String locale) ;
+typedef OnPreDefineLocale = Future<bool> Function(String locale) ;
+typedef OnDefineLocale = void Function(String locale) ;
 
 abstract class LocalesManager {
   static List<LocalesManager> _instances = [] ;
@@ -715,7 +719,7 @@ abstract class LocalesManager {
   final Map<String,String> _localesAlternatives = {} ;
   final Map<String,bool> _initializedLocales = {} ;
 
-  LocalesManager(this.initializeLocaleFunction, [ void onDefineLocale(String locale) ]) {
+  LocalesManager(this.initializeLocaleFunction, [ OnDefineLocale onDefineLocale ]) {
     if (onDefineLocale != null) {
       this.onDefineLocale.listen(onDefineLocale) ;
     }
@@ -814,6 +818,13 @@ abstract class LocalesManager {
   Future<bool> _defineLocale([String locale]) {
     print("Define locale: $locale") ;
 
+    if (locale != null && locale.isNotEmpty) {
+      var defaultLocale = IntlLocale.getDefaultLocale();
+      if (defaultLocale == null) {
+        IntlLocale.setDefaultLocale(locale);
+      }
+    }
+
     if ( isInitializedLocale(locale) ) {
       print("Locale already initialized: $locale") ;
       _defineInitializedLocale(locale) ;
@@ -875,6 +886,8 @@ abstract class LocalesManager {
 
   final EventStream<String> onDefineLocale = EventStream() ;
 
+  final Set<OnPreDefineLocale> onPreDefineLocale = {} ;
+
   void _defineInitializedLocale(String locale) {
     Intl.defaultLocale = locale ;
 
@@ -887,10 +900,24 @@ abstract class LocalesManager {
       print(e) ;
     }
 
+    _notifyOnDefineLocale(locale);
+  }
+
+  void _notifyOnDefineLocale(String locale) async {
+    if ( onPreDefineLocale.isEmpty ) {
+      _notifyOnDefineLocaleImpl(locale) ;
+      return ;
+    }
+
+    var futureList = onPreDefineLocale.where((e) => e != null).map( (e) => e(locale) ).toList() ;
+    await Future.wait(futureList) ;
+
+    _notifyOnDefineLocaleImpl(locale) ;
+  }
+
+  void _notifyOnDefineLocaleImpl(String locale) {
     onDefineLocaleLibraryIntegration.add(locale) ;
-
     onDefineLocaleGlobal.add(locale) ;
-
     onDefineLocale.add(locale) ;
   }
 

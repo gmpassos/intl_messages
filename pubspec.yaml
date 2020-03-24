@@ -1,6 +1,6 @@
 name: intl_messages
 description: Simple and easy internationalization and localization messages.
-version: 1.1.5
+version: 1.1.6
 homepage: https://github.com/gmpassos/intl_messages
 
 environment:
@@ -8,10 +8,10 @@ environment:
 
 dependencies:
   intl: ^0.16.1
-  resource_portable: ^2.1.6
+  resource_portable: ^2.1.7
     #path: ../resource_portable
   enum_to_string: ^1.0.8
-  swiss_knife: ^2.3.7
+  swiss_knife: ^2.3.9
     #path: ../swiss_knife
 
 dev_dependencies:

@@ -1,3 +1,11 @@
+## 1.1.6
+
+- LocalesManager.onPreDefineLocale
+- if IntlLocale.getDefaultLocale() is null when the 1st local is defined, set it as default.
+- Move ResourceContentCache and ResourceContent to package 'swiss_knife'.
+- resource_portable: ^2.1.7
+- swiss_knife: ^2.3.9
+
 ## 1.1.5
 
 - swiss_knife: ^2.3.7
