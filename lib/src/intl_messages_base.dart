@@ -946,6 +946,8 @@ abstract class _IntlDefaultLocale {
     IntlLocale intlLocale = IntlLocale(locale) ;
     _locale = intlLocale.code ;
 
+    Intl.defaultLocale = _locale ;
+
     IntlMessages._notifySetLocale(_locale) ;
 
     onDefineLocale.add(_locale) ;

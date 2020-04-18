@@ -348,6 +348,27 @@ void main() {
 
 
   });
+
+  group('Resource', () {
+    setUp(() {
+
+    });
+
+    test('Message.keyValue[simple]', () {
+
+      var pattern1 = RegExp(r'intl');
+      var path1 = 'path/file-intl.txt';
+      expect( replaceLocale(pattern1, path1, 'en') , equals("path/file-en.txt") );
+      expect( replaceLocale(pattern1, path1, 'fr') , equals("path/file-fr.txt") );
+
+      var pattern2 = RegExp(r'-(LOCALE)-intl');
+      var path2 = 'path/file-LOCALE-intl.txt';
+      expect( replaceLocale(pattern2, path2, 'en') , equals("path/file-en-intl.txt") );
+      expect( replaceLocale(pattern2, path2, 'fr') , equals("path/file-fr-intl.txt") );
+
+    });
+  });
+
 }
 
 
