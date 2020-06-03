@@ -1,5 +1,17 @@
 # intl_messages
 
+[![pub package](https://img.shields.io/pub/v/intl_messages.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/intl_messages)
+[![CI](https://img.shields.io/github/workflow/status/gmpassos/intl_messages/Dart%20CI/master?logo=github-actions&logoColor=white)](https://github.com/gmpassos/intl_messages/actions)
+[![GitHub Tag](https://img.shields.io/github/v/tag/gmpassos/intl_messages?logo=git&logoColor=white)](https://github.com/gmpassos/intl_messages/releases)
+[![New Commits](https://img.shields.io/github/commits-since/gmpassos/intl_messages/latest?logo=git&logoColor=white)](https://github.com/gmpassos/intl_messages/network)
+[![Last Commits](https://img.shields.io/github/last-commit/gmpassos/intl_messages?logo=git&logoColor=white)](https://github.com/gmpassos/intl_messages/commits/master)
+[![Pull Requests](https://img.shields.io/github/issues-pr/gmpassos/intl_messages?logo=github&logoColor=white)](https://github.com/gmpassos/intl_messages/pulls)
+[![Code size](https://img.shields.io/github/languages/code-size/gmpassos/intl_messages?logo=github&logoColor=white)](https://github.com/gmpassos/intl_messages)
+[![License](https://img.shields.io/github/license/gmpassos/intl_messages?logo=open-source-initiative&logoColor=green)](https://github.com/gmpassos/intl_messages/blob/master/LICENSE)
+[![Funding](https://img.shields.io/badge/Donate-yellow?labelColor=666666&style=plastic&logo=liberapay)](https://liberapay.com/gmpassos/donate)
+[![Funding](https://img.shields.io/liberapay/patrons/gmpassos.svg?logo=liberapay)](https://liberapay.com/gmpassos/donate)
+
+
 A Simple and easy library for Message Internationalization and Localization (I18N).
 
 #### Main features:

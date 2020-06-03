@@ -1,3 +1,9 @@
+## 1.1.8
+
+- Added API documentation.
+- dartfmt.
+- swiss_knife: ^2.5.2
+
 ## 1.1.7
 
 - IntlResourceUri
