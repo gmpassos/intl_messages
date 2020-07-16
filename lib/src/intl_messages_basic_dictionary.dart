@@ -6,6 +6,17 @@ import 'intl_messages_base.dart';
 class IntlBasicDictionary {
   static final _dictionary = <String, Map<String, String>>{
     'en': {
+      'unknown': 'unknown',
+      'close': 'close',
+      'open': 'open',
+      'help': 'help',
+      'loading': 'loading',
+      'error': 'error',
+      'empty': 'empty',
+      'empty_list': 'empty list',
+      'empty_result': 'empty result',
+      'no_options': 'no options',
+      'no_result': 'no result',
       'end': 'end',
       'start': 'start',
       'welcome': 'welcome',
@@ -35,6 +46,17 @@ class IntlBasicDictionary {
       'december': 'December'
     },
     'pt': {
+      'unknown': 'desconhecido',
+      'close': 'fechar',
+      'open': 'abrir',
+      'help': 'ajuda',
+      'loading': 'carregando',
+      'error': 'erro',
+      'empty': 'vazio',
+      'empty_list': 'lista vazia',
+      'empty_result': 'resultado vazio',
+      'no_options': 'sem opções',
+      'no_result': 'sem resultado',
       'end': 'fim',
       'start': 'início',
       'welcome': 'bem-vindo',

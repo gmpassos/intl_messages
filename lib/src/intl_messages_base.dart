@@ -63,7 +63,6 @@ class IntlResourceDiscover {
     return _languagesToLookup;
   }
 
-
   List<IntlLocale> _definedLanguages;
 
   Future<List<String>> _findDefinedLocalesFuture;
@@ -114,7 +113,7 @@ class IntlResourceDiscover {
             .toList();
         return list;
       }
-    // ignore: empty_catches
+      // ignore: empty_catches
     } catch (ignore) {}
 
     return Future.value(null);
@@ -163,7 +162,7 @@ class IntlResourceDiscover {
         _findCache[locale] = resourceContent;
         return resourceContent;
       }
-    // ignore: empty_catches
+      // ignore: empty_catches
     } catch (ignore) {}
 
     return Future.value(null);
@@ -345,7 +344,7 @@ class IntlMessages {
   List<Message> _parseContentJSON(String content) {
     var json = jsonDecode(content);
     if (json is Map) {
-      var map = json ;
+      var map = json;
       var messages = <Message>[];
 
       for (dynamic key in map.keys) {
@@ -361,7 +360,7 @@ class IntlMessages {
         try {
           var message = Message.entry(entry);
           messages.add(message);
-        // ignore: empty_catches
+          // ignore: empty_catches
         } catch (ignore) {}
       }
 
@@ -382,7 +381,7 @@ class IntlMessages {
       try {
         var message = Message.line(line);
         messages.add(message);
-      // ignore: empty_catches
+        // ignore: empty_catches
       } catch (ignore) {}
     }
 
@@ -937,7 +936,6 @@ abstract class _IntlDefaultLocale {
   static void setLocale(dynamic locale) {
     _setLocale(locale);
   }
-
 
   static bool _initialized = false;
 

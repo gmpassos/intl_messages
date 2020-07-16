@@ -1,3 +1,8 @@
+## 1.1.9
+
+- Improve `IntlBasicDictionary`
+- dartfmt.
+
 ## 1.1.8
 
 - Added API documentation.
