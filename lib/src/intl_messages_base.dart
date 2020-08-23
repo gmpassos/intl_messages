@@ -211,8 +211,6 @@ class IntlMessages {
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
 
-  //////////////////////////////
-
   static Map<String, IntlMessages> instances = {};
 
   static IntlMessages package(String packageName) {
@@ -232,8 +230,6 @@ class IntlMessages {
       instance._defineLocalesOrder();
     }
   }
-
-  //////////////////////////////
 
   final String packageName;
 
@@ -726,6 +722,14 @@ class IntlMessages {
     return msg(key).build(variables);
   }
 
+  /// Returns a [IntlKey] for message [key],
+  /// with optional parameters [variables] or [variablesProvider].
+  IntlKey key(String key,
+          {Map<String, dynamic> variables,
+          IntlVariablesProvider variablesProvider}) =>
+      IntlKey(this, key,
+          variables: variables, variablesProvider: variablesProvider);
+
   /// Get a message with [key] and returns a corresponding [MessageBuilder].
   MessageBuilder msg(String key) {
     return MessageBuilder._(this, key);
@@ -820,8 +824,6 @@ class MessageBuilder {
     return build();
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 /// Represents a message in a specif locale.
 class LocalizedMessage {
@@ -1005,8 +1007,6 @@ class IntlLocale implements Comparable<IntlLocale> {
     if (reg == null) return '';
     return reg.trim().toUpperCase();
   }
-
-  ///////////////////////////////////////////
 
   String _language;
 
@@ -1697,4 +1697,73 @@ class MessageVariable {
 
   @override
   int get hashCode => name.hashCode;
+}
+
+typedef IntlVariablesProvider = Map<String, dynamic> Function();
+
+/// Represents a internationalized key from a [IntlMessages].
+class IntlKey {
+  /// The messages tables.
+  final IntlMessages intlMessages;
+
+  /// Key of the message at [intlMessages] table.
+  final String key;
+
+  /// The variables to pass when calling [MessageBuilder].
+  final Map<String, dynamic> variables;
+
+  /// The variables provider [Function] to pass when calling [MessageBuilder].
+  final IntlVariablesProvider variablesProvider;
+
+  IntlKey(this.intlMessages, this.key,
+      {this.variables, this.variablesProvider});
+
+  /// Returns a copy of this [IntlKey] with [variables].
+  IntlKey withVariables(Map<String, dynamic> variables) =>
+      IntlKey(intlMessages, key, variables: variables);
+
+  /// Returns a copy of this [IntlKey] with [variablesProvider].
+  IntlKey withVariablesProvider(IntlVariablesProvider variablesProvider) =>
+      IntlKey(intlMessages, key, variablesProvider: variablesProvider);
+
+  /// If [true], [message] will be generate only one time and cached.
+  /// If locale changes after [message] is built and cached,
+  /// it can be in a wrong locale.
+  bool _singleCall = false;
+
+  bool get singleCall => _singleCall;
+
+  set singleCall(bool value) {
+    _singleCall = value ?? true;
+  }
+
+  String _builtMessage;
+
+  /// The built message for this key.
+  ///
+  /// Will generate for each call, unless [singleCall] is true.
+  String get message {
+    if (_builtMessage != null) {
+      return _builtMessage;
+    }
+
+    String msg;
+    if (variablesProvider != null) {
+      var vars = variablesProvider();
+      msg = intlMessages.msg(key).build(vars);
+    } else {
+      msg = intlMessages.msg(key).build(variables);
+    }
+
+    if (_singleCall) {
+      _builtMessage = msg;
+    }
+
+    return msg;
+  }
+
+  @override
+  String toString() {
+    return 'IntlKey{messages: $intlMessages, key: $key, variables: $variables, variablesProvider: $variablesProvider}';
+  }
 }

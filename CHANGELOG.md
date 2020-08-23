@@ -1,3 +1,13 @@
+## 1.1.10
+
+- Added `IntlKey`.
+- dartfmt.
+- More tests.
+- swiss_knife: ^2.5.11
+- pedantic: ^1.9.2
+- test: ^1.15.3
+- test_coverage: ^0.4.2
+
 ## 1.1.9
 
 - Improve `IntlBasicDictionary`
