@@ -1,0 +1,4 @@
+welcome=Bienvenue!
+language=Langue
+
+total_emails={zero[n]:Aucun e-mail pour $user.|one[n]:Un e-mail à $user.|two[n]:Deux courriels à Joe $user.|many[n]:Reçu $n courriels à $user.}

@@ -1,3 +1,7 @@
+## 1.1.12
+
+- Added example.
+
 ## 1.1.11
 
 - Better auto discovery of message resources.
