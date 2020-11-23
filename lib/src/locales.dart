@@ -740,6 +740,10 @@ abstract class LocalesManager {
     return Intl.defaultLocale;
   }
 
+  String getPreferredLocale() {
+    return readPreferredLocale();
+  }
+
   Future<bool> setPreferredLocale(String locale) {
     if (locale == null) {
       print('setPreferredLocale: null locale!');

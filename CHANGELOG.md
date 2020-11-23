@@ -1,3 +1,11 @@
+## 1.1.11
+
+- Better auto discovery of message resources.
+- Added `IntlMessagesLoader` to handle loading of `IntlMessages` and discovery of messages.  
+- Properties now allows multiline entries, like in Dart, using ''' or """ as multiline quote for the entry value. 
+- resource_portable: ^2.1.8
+- swiss_knife: ^2.5.18
+
 ## 1.1.10
 
 - Added `IntlKey`.

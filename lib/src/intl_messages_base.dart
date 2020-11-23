@@ -227,7 +227,7 @@ class IntlMessages {
 
   static void _notifySetLocale(String locale) {
     for (var instance in instances.values) {
-      instance._defineLocalesOrder();
+      instance._defineLocalesOrder(true);
     }
   }
 
@@ -312,15 +312,15 @@ class IntlMessages {
   bool registerMessages(dynamic locale, String content) {
     var intlLocale = IntlLocale(locale);
 
-    List<Message> messaages;
+    List<Message> messages;
 
     if (isContentJSON(content)) {
-      messaages = _parseContentJSON(content);
+      messages = _parseContentJSON(content);
     } else if (isContentProperties(content)) {
-      messaages = _parseContentProperties(content);
+      messages = _parseContentProperties(content);
     }
 
-    registerLocalizedMessages(LocalizedMessages(intlLocale, messaages));
+    registerLocalizedMessages(LocalizedMessages(intlLocale, messages));
 
     return true;
   }
@@ -366,10 +366,37 @@ class IntlMessages {
     }
   }
 
-  List<Message> _parseContentProperties(String content) {
-    var lines = content.split(RegExp(r'[\r\n]+'));
+  static final RegExp _MESSAGE_KEY_BLOCK = RegExp(
+      r"""(?:^|[\r\n])([^\r\n]+?)=(?:'''[\r\n]?(.*?)[\r\n]?'''|"{3}[\r\n]?(.*?)[\r\n]?"{3})([^\r\n]*)""",
+      multiLine: false, dotAll: true);
 
+  List<Message> _parseContentProperties(String content) {
     var messages = <Message>[];
+
+    content = content.replaceAllMapped(_MESSAGE_KEY_BLOCK, (match) {
+      var key = match.group(1);
+      var value1 = match.group(2);
+      var value2 = match.group(3);
+      var desc = match.group(4);
+
+      var value = isNotEmptyString(value1, trim: true)
+          ? value1
+          : (isNotEmptyString(value2, trim: true) ? value2 : '');
+
+      if (isEmptyString(desc, trim: true)) {
+        desc = null;
+      }
+
+      try {
+        var message = Message.keyValue(key, value, desc);
+        messages.add(message);
+        // ignore: empty_catches
+      } catch (ignore) {}
+
+      return '';
+    });
+
+    var lines = content.split(RegExp(r'[\r\n]+'));
 
     for (var line in lines) {
       if (line.trim().isEmpty) continue;
@@ -409,7 +436,7 @@ class IntlMessages {
 
     _currentLocale = intlLocale;
 
-    return _defineLocalesOrder();
+    return _defineLocalesOrder(true);
   }
 
   final Map<IntlLocale, LocalizedMessages> _localizedMessages = {};
@@ -420,35 +447,43 @@ class IntlMessages {
 
   List<IntlLocale> _possibleLocalesOrder;
 
-  List<IntlLocale> _getLocalesOrder() {
+  List<IntlLocale> _getLocalesOrder(bool callAutoDiscover) {
     if (_localesOrder == null) {
-      _defineLocalesOrder();
+      _defineLocalesOrder(callAutoDiscover);
       return _localesOrder;
     }
 
     var currentLocale = this.currentLocale;
     if (currentLocale != _localesOrderLocale) {
-      _defineLocalesOrder();
+      _defineLocalesOrder(callAutoDiscover);
     }
 
     return _localesOrder;
   }
 
-  List<IntlLocale> _getPossibleLocalesOrder() {
+  List<IntlLocale> _getPossibleLocalesOrder(bool callAutoDiscover) {
     if (_possibleLocalesOrder == null) {
-      _defineLocalesOrder();
+      _defineLocalesOrder(callAutoDiscover);
       return _possibleLocalesOrder;
     }
 
     var currentLocale = this.currentLocale;
     if (currentLocale != _localesOrderLocale) {
-      _defineLocalesOrder();
+      _defineLocalesOrder(callAutoDiscover);
     }
-
     return _possibleLocalesOrder;
   }
 
-  Future<bool> _defineLocalesOrder() {
+  Future<bool> _defineLocalesOrder(bool callAutoDiscover) {
+    if (_defineLocalesOrderImpl()) {
+      if (callAutoDiscover) {
+        return autoDiscover();
+      }
+    }
+    return Future.value(false);
+  }
+
+  bool _defineLocalesOrderImpl() {
     var locales = List<IntlLocale>.from(_localizedMessages.keys);
     locales.sort();
 
@@ -503,14 +538,13 @@ class IntlMessages {
     possibleLocalesOrder.addAll(allFallback);
 
     var prevPossibleLocalesOrder = _possibleLocalesOrder;
-
     _possibleLocalesOrder = possibleLocalesOrder;
 
     if (possibleLocalesOrder != prevPossibleLocalesOrder) {
-      return autoDiscover();
+      return true;
     }
 
-    return Future.value(false);
+    return false;
   }
 
   IntlMessages _overrideMessages;
@@ -564,7 +598,7 @@ class IntlMessages {
 
   void clearMessages() {
     _localizedMessages.clear();
-    _defineLocalesOrder();
+    _defineLocalesOrder(true);
   }
 
   final EventStream<String> onRegisterLocalizedMessages = EventStream();
@@ -579,12 +613,19 @@ class IntlMessages {
     var intlLocale = localizedMessages.locale;
 
     _localizedMessages[intlLocale] = localizedMessages;
-    _defineLocalesOrder();
+    _defineLocalesOrder(true);
 
     print('registerLocalizedMessages> $intlLocale');
 
     onRegisterLocalizedMessages.add(intlLocale.code);
     onRegisterLocalizedMessagesGlobal.add(intlLocale.code);
+  }
+
+  bool get hasAnyRegisteredLocalizedMessage => _localizedMessages.isNotEmpty;
+
+  bool hasRegisteredLocalizedMessage(dynamic locale) {
+    var intlLocale = IntlLocale.from(locale);
+    return intlLocale != null && _localizedMessages.containsKey(intlLocale);
   }
 
   /// Returns all registered [IntlLocale]
@@ -600,12 +641,19 @@ class IntlMessages {
   final Set<IntlResourceDiscover> _resourceDiscovers = {};
 
   /// Register a [discover] for resources.
-  Future<bool> registerResourceDiscover(IntlResourceDiscover discover) async {
+  Future<bool> registerResourceDiscover(IntlResourceDiscover discover,
+      {bool allowAutoDiscover = true}) async {
+    if (_resourceDiscovers.contains(discover)) return false;
+
     var changed = _resourceDiscovers.add(discover);
 
     if (changed) {
       _clearAutoFindLocalizedMessagesLocales();
-      return autoDiscover();
+      if (allowAutoDiscover ?? true) {
+        return autoDiscover();
+      } else {
+        return true;
+      }
     } else {
       return false;
     }
@@ -624,18 +672,30 @@ class IntlMessages {
   Future<bool> autoDiscover() async {
     if (_resourceDiscovers.isEmpty) return false;
 
-    var found = false;
+    var found = <IntlLocale>{};
 
-    var possibleLocalesOrder = _getPossibleLocalesOrder();
+    var possibleLocalesOrder = _getPossibleLocalesOrder(false);
 
     for (var l in possibleLocalesOrder) {
       var ret = await _autoFindLocalizedMessagesAsync(l);
       if (ret) {
-        found = true;
+        found.add(l);
       }
     }
 
-    return found;
+    for (var r in _resourceDiscovers) {
+      var definedLocales = await r._getDefinedLocales();
+      if (definedLocales != null && definedLocales.isNotEmpty) {
+        for (var l in definedLocales.where((e) => !found.contains(e))) {
+          var ret = await _autoFindLocalizedMessagesAsync(l);
+          if (ret) {
+            found.add(l);
+          }
+        }
+      }
+    }
+
+    return found.isNotEmpty;
   }
 
   /// Auto discover a specific [locale].
@@ -741,7 +801,7 @@ class IntlMessages {
       if (msg != null) return msg;
     }
 
-    var localesOrder = _getLocalesOrder();
+    var localesOrder = _getLocalesOrder(false);
 
     for (var l in localesOrder) {
       var localizedMessage = _localizedMessages[l];
@@ -757,7 +817,7 @@ class IntlMessages {
       fallbackMsg = fallbackMessages._msg(key);
     }
 
-    for (var l in _getPossibleLocalesOrder()) {
+    for (var l in _getPossibleLocalesOrder(false)) {
       _autoFindLocalizedMessages(l);
     }
 
@@ -765,7 +825,7 @@ class IntlMessages {
   }
 
   String _description(String key) {
-    var localesOrder = _getLocalesOrder();
+    var localesOrder = _getLocalesOrder(false);
 
     for (var l in localesOrder) {
       var localizedMessage = _localizedMessages[l];
@@ -776,7 +836,7 @@ class IntlMessages {
       }
     }
 
-    for (var l in _getPossibleLocalesOrder()) {
+    for (var l in _getPossibleLocalesOrder(false)) {
       var ret = _autoFindLocalizedMessages(l);
 
       if (ret is bool) {
@@ -1023,6 +1083,20 @@ class IntlLocale implements Comparable<IntlLocale> {
 
     _language = lang;
     _region = reg;
+  }
+
+  factory IntlLocale.from(dynamic locale) {
+    if (locale == null) return null;
+    if (locale is IntlLocale) return locale;
+    if (locale is String) {
+      var s = locale.trim();
+      if (s.length <= 6 && !s.contains('/') && !s.contains('.')) {
+        return IntlLocale.code(s);
+      } else {
+        return IntlLocale.path(s);
+      }
+    }
+    return null;
   }
 
   /// Instantiate parsing a path and finding the locale code in it.
@@ -1765,5 +1839,147 @@ class IntlKey {
   @override
   String toString() {
     return 'IntlKey{messages: $intlMessages, key: $key, variables: $variables, variablesProvider: $variablesProvider}';
+  }
+}
+
+/// Loader of [IntlMessages] with registered [IntlResourceDiscover] based into [package] and [pathPrefix].
+class IntlMessagesLoader {
+  static String _normalizePackage(String package) {
+    if (package == null) return null;
+    package = package.trim();
+    if (package.isEmpty) return null;
+    return package;
+  }
+
+  static String _normalizePathPrefix(String pathPrefix) {
+    if (pathPrefix == null) return null;
+    pathPrefix = pathPrefix.trim();
+    if (pathPrefix.isEmpty) return null;
+
+    if (!pathPrefix.endsWith('-')) {
+      pathPrefix += '-';
+    }
+    return pathPrefix;
+  }
+
+  static String _normalizeExtension(String extension) {
+    extension = extension?.trim() ?? '';
+    if (extension.isEmpty) {
+      extension = '.intl';
+    }
+    if (!extension.startsWith('.')) {
+      extension = '.$extension';
+    }
+    return extension;
+  }
+
+  static final Map<IntlMessagesLoader, IntlMessagesLoader> _instances = {};
+
+  /// Returns a cached instance.
+  factory IntlMessagesLoader(String package, String pathPrefix,
+      {String extension = '.intl', bool autoLoad = true}) {
+    package = _normalizePackage(package);
+    pathPrefix = _normalizePathPrefix(pathPrefix);
+    extension = _normalizeExtension(extension);
+
+    if (package == null) {
+      throw ArgumentError('invalid package: $package');
+    }
+
+    if (pathPrefix == null) {
+      throw ArgumentError('invalid pathPrefix: $pathPrefix');
+    }
+
+    var key = IntlMessagesLoader._key(package, pathPrefix, extension);
+
+    var instance = _instances[key];
+
+    if (instance == null) {
+      instance = IntlMessagesLoader._(package, pathPrefix, extension, autoLoad);
+      _instances[instance] = instance;
+    }
+
+    return instance;
+  }
+
+  String _package;
+  String _pathPrefix;
+  String _extension;
+
+  IntlMessages _messages;
+  Future<bool> _messagesDiscover;
+
+  IntlMessagesLoader._(
+      this._package, this._pathPrefix, this._extension, bool autoLoad) {
+    _messages = IntlMessages.package(_package)
+      ..registerResourceDiscover(IntlResourceDiscover(_pathPrefix, _extension),
+          allowAutoDiscover: false);
+
+    if (autoLoad ?? true) {
+      ensureLoaded();
+    }
+  }
+
+  IntlMessagesLoader._key(this._package, this._pathPrefix, this._extension);
+
+  /// The package of the [intlMessages] instance.
+  String get package => _package;
+
+  /// The path prefix for the registered [IntlResourceDiscover].
+  String get pathPrefix => _pathPrefix;
+
+  /// Returns [true] if [pathPrefix] (after normalization) matches [this.pathPrefix].
+  bool matchesPathPrefix(String pathPrefix) {
+    return _pathPrefix == _normalizePathPrefix(pathPrefix);
+  }
+
+  /// The extension for the registered [IntlResourceDiscover].
+  String get extension => _extension;
+
+  /// The handled [IntlMessages] instance.
+  IntlMessages get intlMessages => _messages;
+
+  /// Returns [true] if [IntlMessages.autoDiscover] has registered any [LocalizedMessage].
+  bool get hasLoadedAnyMessage => _messages.hasAnyRegisteredLocalizedMessage;
+
+  /// Returns [true] if [IntlMessages.autoDiscover] is fully loaded and found all [LocalizedMessage].
+  bool get isLoaded => _fullyLoaded ?? false;
+
+  bool _fullyLoaded;
+
+  final EventStream<bool> onLoad = EventStream();
+
+  /// Returns response of [IntlMessages.autoDiscover] called on loader construction.
+  Future<bool> ensureLoaded() async {
+    if (_fullyLoaded != null) return _fullyLoaded;
+    if (_messagesDiscover != null) return _messagesDiscover;
+
+    _messagesDiscover = _messages.autoDiscover();
+    var loaded = await _messagesDiscover;
+
+    if (_fullyLoaded == null) {
+      _fullyLoaded = loaded;
+      onLoad.add(_fullyLoaded);
+    }
+
+    return loaded;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IntlMessagesLoader &&
+          runtimeType == other.runtimeType &&
+          _package == other._package &&
+          _pathPrefix == other._pathPrefix &&
+          _extension == other._extension;
+
+  @override
+  int get hashCode =>
+      _package.hashCode ^ _pathPrefix.hashCode ^ _extension.hashCode;
+
+  @override
+  String toString() {
+    return 'IntlMessagesLoader{package: $package, pathPrefix: $pathPrefix, extension: $extension}';
   }
 }
