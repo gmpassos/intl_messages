@@ -43,7 +43,19 @@ class IntlBasicDictionary {
       'september': 'September',
       'october': 'October',
       'november': 'November',
-      'december': 'December'
+      'december': 'December',
+      'month1': 'January',
+      'month2': 'February',
+      'month3': 'March',
+      'month4': 'April',
+      'month5': 'May',
+      'month6': 'June',
+      'month7': 'July',
+      'month8': 'August',
+      'month9': 'September',
+      'month10': 'October',
+      'month11': 'November',
+      'month12': 'December'
     },
     'pt': {
       'unknown': 'desconhecido',
@@ -83,7 +95,19 @@ class IntlBasicDictionary {
       'september': 'setembro',
       'october': 'outubro',
       'november': 'novembro',
-      'december': 'dezembro'
+      'december': 'dezembro',
+      'month1': 'janeiro',
+      'month2': 'fevereiro',
+      'month3': 'março',
+      'month4': 'abril',
+      'month5': 'maio',
+      'month6': 'junho',
+      'month7': 'julho',
+      'month8': 'agosto',
+      'month9': 'setembro',
+      'month10': 'outubro',
+      'month11': 'novembro',
+      'month12': 'dezembro'
     },
   };
 

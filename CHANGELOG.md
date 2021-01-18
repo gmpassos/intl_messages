@@ -1,3 +1,9 @@
+## 1.1.13
+
+- `IntlBasicDictionary`: Added months names.
+- swiss_knife: ^2.5.23
+- enum_to_string: ^1.0.13
+
 ## 1.1.12
 
 - Added example.
