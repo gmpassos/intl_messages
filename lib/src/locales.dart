@@ -557,7 +557,7 @@ String getLocaleName(String locale,
 }
 
 /// Returns a similar locale, usually for fallback discover.
-List<String> getSimilarLocales(String locale) {
+List<String> getSimilarLocales(String/*!*/ locale) {
   var canonicalizedLocale = Intl.canonicalizedLocale(locale);
 
   var shortLocale = Intl.shortLocale(canonicalizedLocale);
@@ -694,7 +694,7 @@ abstract class LocalesManager {
     _instances.add(this);
   }
 
-  bool isInitializedLocale(String locale) {
+  bool isInitializedLocale(String/*!*/ locale) {
     return _initializedLocales.containsKey(locale) &&
         _initializedLocales[locale];
   }
@@ -703,12 +703,12 @@ abstract class LocalesManager {
     return getLocaleInitializedAlternative(locale) != null;
   }
 
-  bool isFailedLocale(String locale) {
+  bool isFailedLocale(String/*!*/ locale) {
     return _initializedLocales.containsKey(locale) &&
         !_initializedLocales[locale];
   }
 
-  String getLocaleInitializedAlternative(String locale) {
+  String getLocaleInitializedAlternative(String/*!*/ locale) {
     return _localesAlternatives[locale];
   }
 
@@ -736,8 +736,8 @@ abstract class LocalesManager {
     return Map.from(_localesAlternatives);
   }
 
-  String getCurrentLocale() {
-    return Intl.defaultLocale;
+  String/*!*/ getCurrentLocale() {
+    return Intl.defaultLocale ?? 'en';
   }
 
   String getPreferredLocale() {
@@ -854,9 +854,9 @@ abstract class LocalesManager {
     _defineInitializedLocale(locale);
   }
 
-  final EventStream<String> onDefineLocale = EventStream();
+  final EventStream<String/*!*/> onDefineLocale = EventStream();
 
-  final Set<OnPreDefineLocale> onPreDefineLocale = {};
+  final Set<OnPreDefineLocale/*!*/> onPreDefineLocale = {};
 
   void _defineInitializedLocale(String locale) {
     Intl.defaultLocale = locale;
@@ -893,7 +893,7 @@ abstract class LocalesManager {
     onDefineLocale.add(locale);
   }
 
-  List<String> getLocalesSequence(String locale) {
+  List<String> getLocalesSequence(String/*!*/ locale) {
     return getPossibleLocalesSequence(locale);
   }
 
@@ -1001,7 +1001,7 @@ abstract class LocalesManager {
     }
   }
 
-  Future<bool> _callInitializeLocale(String locale, bool strictLocale) {
+  Future<bool> _callInitializeLocale(String/*!*/ locale, bool/*!*/ strictLocale) {
     if (locale == null) throw StateError('Null Locale!');
 
     var future = initializeLocaleFunction(locale);
@@ -1011,9 +1011,7 @@ abstract class LocalesManager {
       if (!ok) {
         return false;
       } else if (strictLocale) {
-        var loadedLocale = isLoadedLocale(locale);
-        var loaded = loadedLocale ?? true;
-        return loaded;
+        return isLoadedLocale(locale, false) ; /*!!!*/
       } else {
         return true;
       }
@@ -1021,15 +1019,15 @@ abstract class LocalesManager {
   }
 }
 
-/// Returns [true] if [locale] is loaded.
-bool isLoadedLocale(String locale) {
+/// Returns [true] if [locale] is loaded or [def].
+bool/*!*/ isLoadedLocale(String locale, [bool/*!*/ def = false]) {
   var lookup = messageLookup;
 
   if (lookup is CompositeMessageLookup) {
     return lookup.availableMessages.containsKey(locale);
   }
 
-  return null;
+  return def;
 }
 
 /// Returns a list of loaded locales.

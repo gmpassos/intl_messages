@@ -7,6 +7,15 @@ import 'package:swiss_knife/swiss_knife.dart';
 
 import 'locales.dart';
 
+void _log(String/*!*/ message, [bool/*!*/ warning = false]) {
+  if (warning) {
+    print('intl_messages> ** [WARNING] $message');
+  }
+  else {
+    print('intl_messages> -- $message');
+  }
+}
+
 /// A internationalized [ResourceContent]
 class IntlResourceContent extends ResourceContent {
   final String locale;
@@ -20,7 +29,7 @@ class IntlResourceContent extends ResourceContent {
 class IntlResourceDiscover {
   final ResourceContentCache _resourceContentCache = ResourceContentCache();
 
-  String _resourcePathPrefix;
+  String /*!*/ _resourcePathPrefix;
 
   String _resourcePathSuffix;
 
@@ -43,7 +52,7 @@ class IntlResourceDiscover {
 
   List<IntlLocale> _languagesToLookup;
 
-  Future<List<String>> _getLanguagesCodesToLookup() async {
+  Future<List<String /*!*/ >> _getLanguagesCodesToLookup() async {
     var list = await _getLanguagesToLookup();
     return list.map((l) => l.code).toList();
   }
@@ -65,7 +74,7 @@ class IntlResourceDiscover {
 
   List<IntlLocale> _definedLanguages;
 
-  Future<List<String>> _findDefinedLocalesFuture;
+  Future<List<String>> /*?*/ _findDefinedLocalesFuture;
 
   Future<List<IntlLocale>> _getDefinedLocales() async {
     if (_definedLanguages != null) return _definedLanguages;
@@ -134,13 +143,13 @@ class IntlResourceDiscover {
 
   /// Finds the resource with [locale].
   Future<IntlResourceContent> find(String locale) async {
-    if (locale == null || locale.isEmpty) return Future.value(null);
+    if (locale == null || locale.isEmpty) return null;
 
     var cached = _findCache[locale];
     if (cached != null) return cached;
 
     var languagesToLookup = await _getLanguagesCodesToLookup();
-    if (!languagesToLookup.contains(locale)) return Future.value(null);
+    if (!languagesToLookup.contains(locale)) return null;
 
     var resourcePath = '$_resourcePathPrefix$locale$_resourcePathSuffix';
     var resource = Resource(resourcePath);
@@ -165,7 +174,7 @@ class IntlResourceDiscover {
       // ignore: empty_catches
     } catch (ignore) {}
 
-    return Future.value(null);
+    return null;
   }
 
   /// Find all localized versions of the resource.
@@ -213,7 +222,7 @@ class IntlMessages {
 
   static Map<String, IntlMessages> instances = {};
 
-  static IntlMessages package(String packageName) {
+  factory IntlMessages.package(String packageName) {
     packageName = normalizePackageName(packageName);
     var instance = instances[packageName];
 
@@ -271,7 +280,7 @@ class IntlMessages {
   /// Register resolved [resource].
   Future<bool> registerMessagesResourceContent(
       IntlResourceContent resource) async {
-    if (resource == null) return Future.value(false);
+    if (resource == null) return false;
 
     var content = await resource.getContent();
     var locale = IntlLocale.code(resource.locale);
@@ -411,10 +420,10 @@ class IntlMessages {
     return messages;
   }
 
-  IntlLocale _currentLocale;
-
   /// Returns the current resolved locales for this instance.
   IntlLocale get currentLocale => getCurrentLocale();
+
+  IntlLocale _currentLocale;
 
   IntlLocale getCurrentLocale() {
     if (_currentLocale != null) return _currentLocale;
@@ -601,7 +610,7 @@ class IntlMessages {
     _defineLocalesOrder(true);
   }
 
-  final EventStream<String> onRegisterLocalizedMessages = EventStream();
+  final EventStream<String /*!*/ > onRegisterLocalizedMessages = EventStream();
 
   static final EventStream<String> onRegisterLocalizedMessagesGlobal =
       EventStream();
@@ -795,6 +804,11 @@ class IntlMessages {
     return MessageBuilder._(this, key);
   }
 
+  /// Return as message as [String]. Same as `msg(key).build(variables)`.
+  String msgAsString(String key, [Map<String, dynamic> variables]) {
+    return msg(key).build(variables);
+  }
+
   LocalizedMessage _msg(String key) {
     if (_overrideMessages != null) {
       var msg = _overrideMessages._msg(key);
@@ -859,7 +873,7 @@ class IntlMessages {
 
 /// Helper to build a message.
 class MessageBuilder {
-  final IntlMessages _intlMessages;
+  final IntlMessages/*!*/ _intlMessages;
 
   final String _key;
 
@@ -873,15 +887,19 @@ class MessageBuilder {
 
   String get description => _intlMessages._description(key);
 
-  String build([Map<String, dynamic> variables]) {
+  String/*!*/ build([Map<String, dynamic> variables]) {
     var msg = message;
-    if (msg == null) return null;
+    if (msg == null) {
+      _log("No message for '$key' @ '${ _intlMessages.packageName }'",true);
+      return '';
+    }
     return msg.build(variables);
   }
 
+  /// Returns a message as [String]. Same as [build].
   @override
-  String toString() {
-    return build();
+  String toString([Map<String, dynamic> variables]) {
+    return build(variables);
   }
 }
 
@@ -901,7 +919,10 @@ class LocalizedMessage {
   String get description => message.description;
 
   String build([Map<String, dynamic> variables]) {
-    if (message == null) return null;
+    if (message == null) {
+      _log("No message for '$key'",true);
+      return '';
+    }
     return message.build(variables);
   }
 
@@ -929,7 +950,7 @@ class LocalizedMessages {
   final IntlLocale locale;
 
   /// Table of messages by key.
-  final Map<String, Message> _messages = {};
+  final Map<String /*!*/, Message> _messages = {};
 
   LocalizedMessages(this.locale, List<Message> messages) {
     if (locale == null) throw ArgumentError.notNull('locale');
@@ -1058,7 +1079,7 @@ class IntlLocale implements Comparable<IntlLocale> {
 
   static String get defaultLocale => getDefaultLocale();
 
-  static EventStream<String> get onDefineDefaultLocale =>
+  static EventStream<String /*!*/ > get onDefineDefaultLocale =>
       _IntlDefaultLocale.onDefineLocale;
 
   static String _normalizeLanguage(String lang) => lang.toLowerCase().trim();
@@ -1068,9 +1089,9 @@ class IntlLocale implements Comparable<IntlLocale> {
     return reg.trim().toUpperCase();
   }
 
-  String _language;
+  String /*!*/ _language;
 
-  String _region;
+  String /*!*/ _region;
 
   /// Instantiate using a string locale code.
   IntlLocale.code(String localeCode) {
@@ -1133,14 +1154,13 @@ class IntlLocale implements Comparable<IntlLocale> {
     throw ArgumentError("Can't find locale part in path");
   }
 
-  IntlLocale.langReg(String language, [String region]) {
+  IntlLocale.langReg(String /*!*/ language, [String region]) {
     if (language == null || language.isEmpty) {
       throw ArgumentError.notNull('language');
     }
-    region ??= '';
 
-    _language = language.toLowerCase().trim();
-    _region = region.toUpperCase().trim();
+    _language = _normalizeLanguage(language);
+    _region = _normalizeRegion(region);
   }
 
   /// Dynamic parsing and instantiation.
@@ -1179,7 +1199,7 @@ class IntlLocale implements Comparable<IntlLocale> {
   bool get hasRegion => _region.isNotEmpty;
 
   /// Full locale code, example: 'en_US', 'pt_BR'
-  String get code => hasRegion ? '${_language}_$_region' : _language;
+  String /*!*/ get code => hasRegion ? '${_language}_$_region' : _language;
 
   @override
   bool operator ==(Object other) =>
@@ -1210,7 +1230,7 @@ class IntlLocale implements Comparable<IntlLocale> {
 
 /// Defines the fallback language hierarchie.
 class IntlFallbackLanguage {
-  String _defaultFallback;
+  String /*!*/ _defaultFallback;
 
   IntlFallbackLanguage([String defaultFallback]) {
     if (defaultFallback == null || defaultFallback.trim() == '') {
@@ -1253,10 +1273,10 @@ class IntlFallbackLanguage {
 /// A message.
 class Message {
   /// External message key.
-  String _key;
+  String /*!*/ _key;
 
   /// The content of the message.
-  MessageValue _value;
+  MessageValue /*!*/ _value;
 
   /// Description to help translators to undertant message context and usage.
   String _description;
@@ -1330,7 +1350,7 @@ class Message {
 
   bool get hasDescription => _description != null && _description.isNotEmpty;
 
-  String build([Map<String, dynamic> variables]) {
+  String/*!*/ build([Map<String, dynamic> variables]) {
     return _value.build(variables);
   }
 
@@ -1454,7 +1474,7 @@ class MessageBlock {
 }
 
 class MessageBlockBranch {
-  MessageBlockBranchType _type;
+  MessageBlockBranchType /*!*/ _type;
 
   String _variableName;
 
@@ -1482,13 +1502,15 @@ class MessageBlockBranch {
       var varName = typeStr.substring(idx2 + 1, idx3).trim();
 
       return MessageBlockBranch._(
-          EnumToString.fromString(MessageBlockBranchType.values, type),
+          EnumToString.fromString(MessageBlockBranchType.values, type) ??
+              MessageBlockBranchType.DEFAULT,
           varName,
           MessageValue(value));
     } else {
       typeStr = typeStr.toUpperCase();
       return MessageBlockBranch._(
-          EnumToString.fromString(MessageBlockBranchType.values, typeStr),
+          EnumToString.fromString(MessageBlockBranchType.values, typeStr) ??
+              MessageBlockBranchType.DEFAULT,
           null,
           MessageValue(value));
     }
@@ -1518,7 +1540,8 @@ class MessageBlockBranch {
   }
 
   bool matchesZero(Map<String, dynamic> variables) {
-    if (variables == null || variables.isEmpty) return true;
+    if (variables == null || variables.isEmpty || _variableName == null)
+      return true;
     var varVal = variables[_variableName];
     if (varVal == null) return true;
 
@@ -1537,7 +1560,8 @@ class MessageBlockBranch {
   }
 
   bool matchesOne(Map<String, dynamic> variables) {
-    if (variables == null || variables.isEmpty) return false;
+    if (variables == null || variables.isEmpty || _variableName == null)
+      return false;
     var varVal = variables[_variableName];
     if (varVal == null) return false;
 
@@ -1556,7 +1580,8 @@ class MessageBlockBranch {
   }
 
   bool matchesTwo(Map<String, dynamic> variables) {
-    if (variables == null || variables.isEmpty) return false;
+    if (variables == null || variables.isEmpty || _variableName == null)
+      return false;
     var varVal = variables[_variableName];
     if (varVal == null) return false;
 
@@ -1575,7 +1600,8 @@ class MessageBlockBranch {
   }
 
   bool matchesMany(Map<String, dynamic> variables) {
-    if (variables == null || variables.isEmpty) return false;
+    if (variables == null || variables.isEmpty || _variableName == null)
+      return false;
     var varVal = variables[_variableName];
     if (varVal == null) return false;
 
@@ -1590,7 +1616,8 @@ class MessageBlockBranch {
   }
 
   bool matchesOther(Map<String, dynamic> variables) {
-    if (variables == null || variables.isEmpty) return false;
+    if (variables == null || variables.isEmpty || _variableName == null)
+      return false;
     var varVal = variables[_variableName];
     if (varVal == null) return false;
 
@@ -1630,7 +1657,8 @@ class MessageBlockBranch {
           _value == other._value;
 
   @override
-  int get hashCode => _type.hashCode ^ _variableName.hashCode ^ _value.hashCode;
+  int get hashCode =>
+      _type.hashCode ^ (_variableName?.hashCode ?? 0) ^ _value.hashCode;
 }
 
 class MessageValue {
@@ -1733,7 +1761,7 @@ class MessageValue {
     return valNorm;
   }
 
-  String build([Map<String, dynamic> variables]) {
+  String/*!*/ build([Map<String, dynamic> variables]) {
     var built = '';
 
     for (var e in _values) {
@@ -1751,7 +1779,7 @@ class MessageValue {
 }
 
 class MessageVariable {
-  final String name;
+  final String/*!*/ name;
 
   MessageVariable(this.name);
 
@@ -1906,8 +1934,7 @@ class IntlMessagesLoader {
   String _pathPrefix;
   String _extension;
 
-  IntlMessages _messages;
-  Future<bool> _messagesDiscover;
+  IntlMessages/*!*/ _messages;
 
   IntlMessagesLoader._(
       this._package, this._pathPrefix, this._extension, bool autoLoad) {
@@ -1940,17 +1967,19 @@ class IntlMessagesLoader {
   IntlMessages get intlMessages => _messages;
 
   /// Returns [true] if [IntlMessages.autoDiscover] has registered any [LocalizedMessage].
-  bool get hasLoadedAnyMessage => _messages.hasAnyRegisteredLocalizedMessage;
+  bool get hasLoadedAnyMessage => _messages?.hasAnyRegisteredLocalizedMessage ?? false ;
 
   /// Returns [true] if [IntlMessages.autoDiscover] is fully loaded and found all [LocalizedMessage].
   bool get isLoaded => _fullyLoaded ?? false;
 
-  bool _fullyLoaded;
+  bool/*?*/ _fullyLoaded;
 
   final EventStream<bool> onLoad = EventStream();
 
+  Future<bool> _messagesDiscover;
+
   /// Returns response of [IntlMessages.autoDiscover] called on loader construction.
-  Future<bool> ensureLoaded() async {
+  Future<bool/*!*/> ensureLoaded() async {
     if (_fullyLoaded != null) return _fullyLoaded;
     if (_messagesDiscover != null) return _messagesDiscover;
 

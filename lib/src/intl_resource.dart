@@ -26,10 +26,12 @@ class IntlResourceUri {
 
       var resourceContent = _cached(ResourceContent.fromURI(uri));
 
-      await resourceContent.getContent();
+      if (resourceContent != null) {
+        await resourceContent.getContent();
 
-      if (resourceContent.isLoaded && !resourceContent.isLoadedWithError) {
-        return resourceContent;
+        if (resourceContent.isLoaded && !resourceContent.isLoadedWithError) {
+          return resourceContent;
+        }
       }
     }
 
@@ -37,6 +39,7 @@ class IntlResourceUri {
   }
 
   ResourceContent _cached(ResourceContent resourceContent) {
+    if (resourceContent == null) return null ;
     if (_resourceContentCache != null) {
       return _resourceContentCache.get(resourceContent);
     }
