@@ -23,7 +23,7 @@ class App {
   String msgTotalEmails(int n, String user) =>
       messages.msg('total_emails').build({'n': n, 'user': user});
 
-  final String forceLocale;
+  final String? forceLocale;
 
   App([this.forceLocale]) {
     if (intlMessagesLoader.isLoaded) {
@@ -42,7 +42,7 @@ class App {
 
     print(msgWelcome);
 
-    print('$msgLanguage: ${messages.currentLocale.language}');
+    print('$msgLanguage: ${messages.currentLocale!.language}');
 
     for (var i = 0; i <= 4; i++) {
       print('$i> ${msgTotalEmails(i, 'Joe')}');

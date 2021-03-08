@@ -11,13 +11,13 @@ class IntlResourceUri {
   /// The main URI to build the localized uris.
   final String mainUri;
 
-  final ResourceContentCache _resourceContentCache;
+  final ResourceContentCache? _resourceContentCache;
 
   IntlResourceUri(this.uriLocalePattern, this.mainUri,
       [this._resourceContentCache]);
 
   /// Resolves the Uri with the desired locale code and available URIs.
-  Future<ResourceContent> resolveResourceContent() async {
+  Future<ResourceContent?> resolveResourceContent() async {
     var defaultLocale = IntlLocale.getDefaultLocale() ?? 'en';
     var localesSequence = getPossibleLocalesSequence(defaultLocale);
 
@@ -38,10 +38,10 @@ class IntlResourceUri {
     return null;
   }
 
-  ResourceContent _cached(ResourceContent resourceContent) {
-    if (resourceContent == null) return null ;
+  ResourceContent? _cached(ResourceContent? resourceContent) {
+    if (resourceContent == null) return null;
     if (_resourceContentCache != null) {
-      return _resourceContentCache.get(resourceContent);
+      return _resourceContentCache!.get(resourceContent);
     }
     return resourceContent;
   }
@@ -59,9 +59,9 @@ String replaceLocale(RegExp pattern, String path, String locale) {
   if (match.groupCount == 0) {
     s2 += locale;
   } else if (match.groupCount == 1) {
-    var g1 = match.group(1);
+    var g1 = match.group(1)!;
 
-    var idx = g0.indexOf(g1);
+    var idx = g0!.indexOf(g1);
 
     assert(idx >= 0);
 

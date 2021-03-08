@@ -7,8 +7,8 @@ import 'intl_messages_base.dart';
 import 'intl_messages_basic_dictionary.dart';
 
 /// Returns the localized title message for [rangeType].
-String getDateRangeTypeTitle(DateRangeType rangeType,
-    [IntlLocale locale, IntlLocale localeFallback]) {
+String? getDateRangeTypeTitle(DateRangeType rangeType,
+    [IntlLocale? locale, IntlLocale? localeFallback]) {
   switch (rangeType) {
     case DateRangeType.TODAY:
       return IntlBasicDictionary.msg('today', locale, localeFallback);
@@ -40,25 +40,25 @@ String getDateRangeTypeTitle(DateRangeType rangeType,
 }
 
 /// Returns [DateFormat] for [locale] and skeleton `yMMMd`.
-DateFormat getDateFormat_yMMMd([IntlLocale locale]) {
+DateFormat getDateFormat_yMMMd([IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
   return DateFormat.yMMMd(locale.code);
 }
 
 /// Returns [DateFormat] for [locale] and skeleton yMMMMd`.
-DateFormat getDateFormat_yMMMMd([IntlLocale locale]) {
+DateFormat getDateFormat_yMMMMd([IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
   return DateFormat.yMMMMd(locale.code);
 }
 
 /// A [DateSymbols], with many information for [locale]
-DateSymbols getLocaleDateSymbols([IntlLocale locale]) {
+DateSymbols? getLocaleDateSymbols([IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
 
   var code = locale.code;
 
   var map = dateTimeSymbolMap();
-  DateSymbols dateSymbols = map[code];
+  DateSymbols? dateSymbols = map[code];
 
   dateSymbols ??= map[locale.language];
 
@@ -74,17 +74,16 @@ DateSymbols getLocaleDateSymbols([IntlLocale locale]) {
 }
 
 /// Returns [DateTimeWeekDay] for [locale].
-DateTimeWeekDay getFirstDayOfWeek([IntlLocale locale]) {
+DateTimeWeekDay getFirstDayOfWeek([IntlLocale? locale]) {
   var dateSymbols = getLocaleDateSymbols(locale);
   if (dateSymbols == null) return DateTimeWeekDay.Monday;
   var firstdayofweek = dateSymbols.FIRSTDAYOFWEEK;
-  var dateTimeWeekDay = getDateTimeWeekDay_from_ISO_8601_index(firstdayofweek);
-  assert(dateTimeWeekDay != null);
+  var dateTimeWeekDay = getDateTimeWeekDay_from_ISO_8601_index(firstdayofweek)!;
   return dateTimeWeekDay;
 }
 
 /// Returns [true] if [locale] us AMPM format.
-bool getTimeFormatUsesAMPM([IntlLocale locale]) {
+bool getTimeFormatUsesAMPM([IntlLocale? locale]) {
   var dateSymbols = getLocaleDateSymbols(locale);
   if (dateSymbols == null) return false;
   var timeFormat = dateSymbols.TIMEFORMATS[0];
@@ -94,7 +93,7 @@ bool getTimeFormatUsesAMPM([IntlLocale locale]) {
 /// Gets a date range, [startTime] and [endTime], and formats it's texts with [locale], trying to use less characters.
 String formatDateRangeText(
     DateTime startTime, DateTime endTime, bool hasTimePicker,
-    [IntlLocale locale]) {
+    [IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
 
   var startFormat = getDateFormat_yMMMd();
@@ -107,7 +106,7 @@ String formatDateRangeText(
       if (startTime.day == endTime.day) {
         sameDay = true;
       } else {
-        if (!startFormat.pattern.startsWith('MMM') && !hasTimePicker) {
+        if (!startFormat.pattern!.startsWith('MMM') && !hasTimePicker) {
           startFormat = DateFormat('d', locale.code);
         } else {
           startFormat = DateFormat('MMMd', locale.code);

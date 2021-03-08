@@ -5,7 +5,7 @@ import 'locales.dart';
 /// Generic implementation of [LocalesManager].
 class LocalesManagerGeneric extends LocalesManager {
   LocalesManagerGeneric(InitializeLocaleFunction initializeLocaleFunction,
-      [void Function(String locale) onDefineLocale])
+      [void Function(String locale)? onDefineLocale])
       : super(initializeLocaleFunction, onDefineLocale);
 
   @override
@@ -52,6 +52,6 @@ List<String> getPossibleLocalesSequenceImpl(String locale) {
 
 LocalesManager createLocalesManagerImpl(
     InitializeLocaleFunction initializeLocaleFunction,
-    [void Function(String locale) onDefineLocale]) {
+    [void Function(String locale)? onDefineLocale]) {
   return LocalesManagerGeneric(initializeLocaleFunction, onDefineLocale);
 }

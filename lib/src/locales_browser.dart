@@ -8,7 +8,7 @@ import 'locales.dart';
 /// Browser implementation of [LocalesManager].
 class LocalesManagerBrowser extends LocalesManager {
   LocalesManagerBrowser(InitializeLocaleFunction initializeLocaleFunction,
-      [void Function(String locale) onDefineLocale])
+      [void Function(String locale)? onDefineLocale])
       : super(initializeLocaleFunction, onDefineLocale);
 
   final String _LOCAL_KEY_locales_preferredLocale =
@@ -21,7 +21,7 @@ class LocalesManagerBrowser extends LocalesManager {
   }
 
   @override
-  String readPreferredLocale() {
+  String? readPreferredLocale() {
     return window.localStorage[_LOCAL_KEY_locales_preferredLocale];
   }
 
@@ -44,24 +44,22 @@ class LocalesManagerBrowser extends LocalesManager {
     for (var localeOption in localeOptions) {
       var opt = OptionElement(
           value: localeOption.locale,
-          data: localeOption.name,
-          selected: localeOption.selected);
+          data: localeOption.name!,
+          selected: localeOption.selected!);
       selectElement.children.add(opt);
     }
 
     var initializeAllLocales = this.initializeAllLocales();
 
-    if (refreshOnChange != null) {
-      initializeAllLocales.then((ok) {
-        if (ok) refreshOnChange();
-      });
-    }
+    initializeAllLocales.then((ok) {
+      if (ok) refreshOnChange();
+    });
 
     selectElement.onChange.listen((e) {
       var locale = selectElement.selectedOptions[0].value;
       print('selected language: $locale');
       setPreferredLocale(locale);
-      if (refreshOnChange != null) refreshOnChange();
+      refreshOnChange();
     });
 
     return selectElement;
@@ -87,7 +85,7 @@ List<String> getPossibleLocalesSequenceInBrowser(String locale) {
   print(
       'window.navigator.language: ${window.navigator.language} ; ${window.navigator.languages} ');
 
-  for (var l in window.navigator.languages) {
+  for (var l in window.navigator.languages!) {
     l = Intl.canonicalizedLocale(l);
     if (!possibleLocalesSequence.contains(l)) {
       possibleLocalesSequence.add(l);
@@ -111,6 +109,6 @@ List<String> getPossibleLocalesSequenceImpl(String locale) {
 
 LocalesManager createLocalesManagerImpl(
     InitializeLocaleFunction initializeLocaleFunction,
-    [void Function(String locale) onDefineLocale]) {
+    [void Function(String locale)? onDefineLocale]) {
   return LocalesManagerBrowser(initializeLocaleFunction, onDefineLocale);
 }

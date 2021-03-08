@@ -163,16 +163,15 @@ class IntlBasicDictionary {
     },
   };
 
-  static String msgUpperCaseInitials(String key,
-      [IntlLocale locale, IntlLocale localeFallback]) {
+  static String? msgUpperCaseInitials(String key,
+      [IntlLocale? locale, IntlLocale? localeFallback]) {
     var m = msg(key, locale, localeFallback);
     if (m == null) return null;
     return toUpperCaseInitials(m);
   }
 
-  static String msg(String key,
-      [IntlLocale locale, IntlLocale localeFallback]) {
-    if (key == null) return null;
+  static String? msg(String key,
+      [IntlLocale? locale, IntlLocale? localeFallback]) {
     key = key.trim().toLowerCase();
     if (key.isEmpty) return null;
 
@@ -200,13 +199,13 @@ class IntlBasicDictionary {
     }
   }
 
-  static String buildMsg(String key, List<String> vars,
-      [IntlLocale locale, IntlLocale localeFallback]) {
+  static String? buildMsg(String key, List<String> vars,
+      [IntlLocale? locale, IntlLocale? localeFallback]) {
     var m = msg(key, locale, localeFallback);
     if (m == null) return null;
 
     var m2 = m.replaceAllMapped(RegExp(r'\$(\d+)'), (m) {
-      var idx = int.parse(m.group(1));
+      var idx = int.parse(m.group(1)!);
       var val = idx < vars.length ? vars[idx] : '';
       return val;
     });

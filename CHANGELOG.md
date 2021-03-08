@@ -1,3 +1,16 @@
+## 2.0.0-nullsafety.1
+
+- Dart 2.12.0:
+  - Sound null safety compatibility.
+  - Update CI dart commands.
+  - sdk: '>=2.12.0 <3.0.0'
+- intl: ^0.17.0
+- resource_portable: ^3.0.0
+- enum_to_string: ^2.0.0-nullsafety.1
+- swiss_knife: ^3.0.1
+- pedantic: ^1.11.0
+- test: ^1.16.5
+  
 ## 1.1.13
 
 - `IntlBasicDictionary`: Added months names.

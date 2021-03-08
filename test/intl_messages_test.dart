@@ -169,7 +169,7 @@ void main() {
 
       var discover = IntlResourceDiscover('test/test-', '.intl');
 
-      bool reg = await package.findAndRegisterMessagesResources(discover);
+      var reg = await package.findAndRegisterMessagesResources(discover);
       expect(reg, equals(true));
 
       var registeredLocales = package.getRegisteredLocales();
@@ -186,8 +186,8 @@ void main() {
 
       var discover = IntlResourceDiscover('test/test-', '.intl');
 
-      bool reg = await package
-          .findAndRegisterMessagesResourcesWithLocales(discover, ['fr']);
+      var reg = await (package
+          .findAndRegisterMessagesResourcesWithLocales(discover, ['fr']));
       expect(reg, equals(true));
 
       var registeredLocales = package.getRegisteredLocales();
@@ -205,11 +205,13 @@ void main() {
       var discover = IntlResourceDiscover('test/test-', '.intl');
       var reg = package.registerResourceDiscover(discover);
 
-      expect(reg != null, equals(true));
+      var regComplete = reg.whenComplete(() {
+        print('LOADED: $discover');
+      });
 
       var msg = package.msg('foo');
 
-      expect(msg.build(), equals(null));
+      expect(msg.build(), isEmpty);
       expect(msg.message, equals(null));
 
       var onRegisterLocalizedMessages = <String>[];
@@ -228,6 +230,8 @@ void main() {
 
       expect(msg.build(), equals('x'));
       expect(msg.description, equals('Some description'));
+
+      expect(await regComplete, isTrue);
 
       //////////
 

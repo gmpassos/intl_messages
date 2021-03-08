@@ -517,9 +517,9 @@ List<String> ALL_LOCALES_CODES() {
 
 /// Returns the name of a locale code.
 String getLocaleName(String locale,
-    {String defaultName,
+    {String? defaultName,
     bool nativeName = false,
-    String nativeLocale,
+    String? nativeLocale,
     bool preserveLatinNames = true}) {
   locale = Intl.canonicalizedLocale(locale);
   var localeShort = Intl.shortLocale(locale);
@@ -553,11 +553,11 @@ String getLocaleName(String locale,
     }
   }
 
-  return name ?? defaultName;
+  return name ?? defaultName!;
 }
 
 /// Returns a similar locale, usually for fallback discover.
-List<String> getSimilarLocales(String/*!*/ locale) {
+List<String> getSimilarLocales(String locale) {
   var canonicalizedLocale = Intl.canonicalizedLocale(locale);
 
   var shortLocale = Intl.shortLocale(canonicalizedLocale);
@@ -578,7 +578,7 @@ class LocaleInitializer {
 
   final List<String> _locales;
 
-  Completer<bool> _completer;
+  late Completer<bool> _completer;
 
   LocaleInitializer(this.initializeFunction, this._locales) {
     _completer = Completer();
@@ -601,8 +601,6 @@ class LocaleInitializer {
 
     var future = initializeFunction(locale);
 
-    future ??= Future.value(false);
-
     future.then((ok) {
       _onInitialize(idx, ok);
     });
@@ -616,9 +614,9 @@ class LocaleInitializer {
 
   List<String> get failedLocales => List.from(_failedLocales);
 
-  String _initializedLocale;
+  String? _initializedLocale;
 
-  String get initializedLocale => _initializedLocale;
+  String? get initializedLocale => _initializedLocale;
 
   void _onInitialize(int idx, bool ok) {
     var locale = _locales[idx];
@@ -642,16 +640,16 @@ class LocaleInitializer {
 
 LocalesManager createLocalesManager(
     InitializeLocaleFunction initializeLocaleFunction,
-    [void Function(String locale) onDefineLocale]) {
+    [void Function(String locale)? onDefineLocale]) {
   return createLocalesManagerImpl(initializeLocaleFunction, onDefineLocale);
 }
 
 class LocaleOption {
   final String locale;
 
-  final bool selected;
+  final bool? selected;
 
-  final String name;
+  final String? name;
 
   LocaleOption(this.locale, [this.selected, this.name]);
 
@@ -686,7 +684,7 @@ abstract class LocalesManager {
   final Map<String, bool> _initializedLocales = {};
 
   LocalesManager(this.initializeLocaleFunction,
-      [OnDefineLocale onDefineLocale]) {
+      [OnDefineLocale? onDefineLocale]) {
     if (onDefineLocale != null) {
       this.onDefineLocale.listen(onDefineLocale);
     }
@@ -694,21 +692,21 @@ abstract class LocalesManager {
     _instances.add(this);
   }
 
-  bool isInitializedLocale(String/*!*/ locale) {
+  bool isInitializedLocale(String locale) {
     return _initializedLocales.containsKey(locale) &&
-        _initializedLocales[locale];
+        _initializedLocales[locale]!;
   }
 
   bool isInitializedLocaleWithAlternative(String locale) {
     return getLocaleInitializedAlternative(locale) != null;
   }
 
-  bool isFailedLocale(String/*!*/ locale) {
+  bool isFailedLocale(String locale) {
     return _initializedLocales.containsKey(locale) &&
-        !_initializedLocales[locale];
+        !_initializedLocales[locale]!;
   }
 
-  String getLocaleInitializedAlternative(String/*!*/ locale) {
+  String? getLocaleInitializedAlternative(String locale) {
     return _localesAlternatives[locale];
   }
 
@@ -736,20 +734,15 @@ abstract class LocalesManager {
     return Map.from(_localesAlternatives);
   }
 
-  String/*!*/ getCurrentLocale() {
+  String getCurrentLocale() {
     return Intl.defaultLocale ?? 'en';
   }
 
-  String getPreferredLocale() {
+  String? getPreferredLocale() {
     return readPreferredLocale();
   }
 
   Future<bool> setPreferredLocale(String locale) {
-    if (locale == null) {
-      print('setPreferredLocale: null locale!');
-      return Future.value(false);
-    }
-
     print('setPreferredLocale: $locale');
 
     storePreferredLocale(locale);
@@ -757,28 +750,26 @@ abstract class LocalesManager {
     return _defineLocale(locale);
   }
 
-  String readPreferredLocale() {
+  String? readPreferredLocale() {
     return null;
   }
 
   void storePreferredLocale(String locale) {}
 
-  String defineLocaleFromSystem() {
+  String? defineLocaleFromSystem() {
     return null;
   }
 
-  Future<bool> _initialized;
+  Future<bool>? _initialized;
 
-  Future<bool> initialize(String Function() preferredLocale) {
+  Future<bool>? initialize([String Function()? preferredLocale]) {
     if (_initialized != null) return _initialized;
 
     var locale = preferredLocale != null ? preferredLocale() : null;
 
-    locale ??= readPreferredLocale();
-
     if (locale == null) {
       print('defineLocaleFromSystem()');
-      locale = defineLocaleFromSystem();
+      locale = defineLocaleFromSystem()!;
       print('System locale: $locale');
     }
 
@@ -787,10 +778,10 @@ abstract class LocalesManager {
     return _initialized;
   }
 
-  Future<bool> _defineLocale([String locale]) {
+  Future<bool> _defineLocale(String locale) {
     print('Define locale: $locale');
 
-    if (locale != null && locale.isNotEmpty) {
+    if (locale.isNotEmpty) {
       IntlLocale.setDefaultLocale(locale);
     }
 
@@ -817,10 +808,6 @@ abstract class LocalesManager {
     var localeInitializer = LocaleInitializer(
         (s) => _callInitializeLocale(s, true), possibleLocalesSequence);
 
-    if (localeInitializer == null) {
-      return Future.value(false);
-    }
-
     localeInitializer.onFailLocale.listen((l) {
       _initializedLocales[l] = false;
     });
@@ -829,7 +816,7 @@ abstract class LocalesManager {
 
     return futureInitializeLocale.then((ok) {
       if (ok) {
-        var locale = localeInitializer.initializedLocale;
+        var locale = localeInitializer.initializedLocale!;
         var localeShort = Intl.shortLocale(locale);
 
         for (var l in localeInitializer.failedLocales) {
@@ -854,9 +841,9 @@ abstract class LocalesManager {
     _defineInitializedLocale(locale);
   }
 
-  final EventStream<String/*!*/> onDefineLocale = EventStream();
+  final EventStream<String> onDefineLocale = EventStream();
 
-  final Set<OnPreDefineLocale/*!*/> onPreDefineLocale = {};
+  final Set<OnPreDefineLocale> onPreDefineLocale = {};
 
   void _defineInitializedLocale(String locale) {
     Intl.defaultLocale = locale;
@@ -878,10 +865,7 @@ abstract class LocalesManager {
       return;
     }
 
-    var futureList = onPreDefineLocale
-        .where((e) => e != null)
-        .map((e) => e(locale))
-        .toList();
+    var futureList = onPreDefineLocale.map((e) => e(locale)).toList();
     await Future.wait(futureList);
 
     _notifyOnDefineLocaleImpl(locale);
@@ -893,7 +877,7 @@ abstract class LocalesManager {
     onDefineLocale.add(locale);
   }
 
-  List<String> getLocalesSequence(String/*!*/ locale) {
+  List<String> getLocalesSequence(String locale) {
     return getPossibleLocalesSequence(locale);
   }
 
@@ -954,7 +938,6 @@ abstract class LocalesManager {
       }
 
       var futureInit = _callInitializeLocale(l, true);
-      if (futureInit == null) continue;
 
       initializations[l] = 0;
 
@@ -986,13 +969,13 @@ abstract class LocalesManager {
 
   void _onInitializeAllLocales() {
     for (var l in _initializedLocales.keys) {
-      var lOk = _initializedLocales[l];
+      var lOk = _initializedLocales[l]!;
 
       if (!lOk) {
         var similarLocales = getSimilarLocales(l);
 
         var alternatives =
-            similarLocales.where((l) => _initializedLocales[l]).toList();
+            similarLocales.where((l) => _initializedLocales[l]!).toList();
 
         if (alternatives.isNotEmpty) {
           _localesAlternatives[l] = alternatives[0];
@@ -1001,17 +984,14 @@ abstract class LocalesManager {
     }
   }
 
-  Future<bool> _callInitializeLocale(String/*!*/ locale, bool/*!*/ strictLocale) {
-    if (locale == null) throw StateError('Null Locale!');
-
+  Future<bool> _callInitializeLocale(String locale, bool strictLocale) {
     var future = initializeLocaleFunction(locale);
-    if (future == null) return null;
 
     return future.then((ok) {
       if (!ok) {
         return false;
       } else if (strictLocale) {
-        return isLoadedLocale(locale, false) ; /*!!!*/
+        return isLoadedLocale(locale, false); /*!!!*/
       } else {
         return true;
       }
@@ -1020,7 +1000,7 @@ abstract class LocalesManager {
 }
 
 /// Returns [true] if [locale] is loaded or [def].
-bool/*!*/ isLoadedLocale(String locale, [bool/*!*/ def = false]) {
+bool isLoadedLocale(String locale, [bool def = false]) {
   var lookup = messageLookup;
 
   if (lookup is CompositeMessageLookup) {
@@ -1031,11 +1011,11 @@ bool/*!*/ isLoadedLocale(String locale, [bool/*!*/ def = false]) {
 }
 
 /// Returns a list of loaded locales.
-List<String> getLoadedLocales() {
+List<String>? getLoadedLocales() {
   var lookup = messageLookup;
 
   if (lookup is CompositeMessageLookup) {
-    return lookup.availableMessages.keys;
+    return lookup.availableMessages.keys as List<String>?;
   }
 
   return null;
@@ -1059,7 +1039,7 @@ String get messageIdiom => messageIdiomByLocale(getCurrentLocale());
 /// Returns the message for the word `language`.
 /// Useful to build language selectors.
 String messageLanguageByLocale(String locale) {
-  locale = locale != null ? Intl.shortLocale(locale) : '';
+  locale = Intl.shortLocale(locale);
 
   if (locale == 'en') return 'Language';
   if (locale == 'pt') return 'Língua';
@@ -1080,7 +1060,7 @@ String messageLanguageByLocale(String locale) {
 /// Returns the message for the word `idiom`.
 /// Useful to build language selectors.
 String messageIdiomByLocale(String locale) {
-  locale = locale != null ? Intl.shortLocale(locale) : '';
+  locale = Intl.shortLocale(locale);
 
   if (locale == 'en') return 'Idiom';
   if (locale == 'pt') return 'Idioma';
