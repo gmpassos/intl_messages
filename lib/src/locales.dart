@@ -991,7 +991,7 @@ abstract class LocalesManager {
       if (!ok) {
         return false;
       } else if (strictLocale) {
-        return isLoadedLocale(locale, false); /*!!!*/
+        return isLoadedLocale(locale, false);
       } else {
         return true;
       }
