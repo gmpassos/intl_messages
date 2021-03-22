@@ -1931,12 +1931,12 @@ class IntlMessagesLoader {
 
   bool? _fullyLoaded;
 
-  final EventStream<bool?> onLoad = EventStream();
+  final EventStream<bool> onLoad = EventStream();
 
   Future<bool>? _messagesDiscover;
 
   /// Returns response of [IntlMessages.autoDiscover] called on loader construction.
-  Future<bool>? ensureLoaded() async {
+  Future<bool> ensureLoaded() async {
     if (_fullyLoaded != null) return _fullyLoaded!;
     if (_messagesDiscover != null) return _messagesDiscover!;
 
@@ -1945,7 +1945,7 @@ class IntlMessagesLoader {
 
     if (_fullyLoaded == null) {
       _fullyLoaded = loaded;
-      onLoad.add(_fullyLoaded);
+      onLoad.add(loaded);
     }
 
     return loaded;

@@ -762,7 +762,7 @@ abstract class LocalesManager {
 
   Future<bool>? _initialized;
 
-  Future<bool>? initialize([String Function()? preferredLocale]) {
+  Future<bool>? initialize([String? Function()? preferredLocale]) {
     if (_initialized != null) return _initialized;
 
     var locale = preferredLocale != null ? preferredLocale() : null;
