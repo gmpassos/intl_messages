@@ -10,29 +10,29 @@ import 'intl_messages_basic_dictionary.dart';
 String? getDateRangeTypeTitle(DateRangeType rangeType,
     [IntlLocale? locale, IntlLocale? localeFallback]) {
   switch (rangeType) {
-    case DateRangeType.TODAY:
+    case DateRangeType.today:
       return IntlBasicDictionary.msg('today', locale, localeFallback);
-    case DateRangeType.YESTERDAY:
+    case DateRangeType.yesterday:
       return IntlBasicDictionary.msg('yesterday', locale, localeFallback);
-    case DateRangeType.LAST_7_DAYS:
+    case DateRangeType.last7Days:
       return IntlBasicDictionary.buildMsg(
           'last N days', ['7'], locale, localeFallback);
-    case DateRangeType.THIS_WEEK:
+    case DateRangeType.thisWeek:
       return IntlBasicDictionary.msg('this week', locale, localeFallback);
-    case DateRangeType.LAST_WEEK:
+    case DateRangeType.lastWeek:
       return IntlBasicDictionary.msg('last week', locale, localeFallback);
-    case DateRangeType.LAST_30_DAYS:
+    case DateRangeType.last30Days:
       return IntlBasicDictionary.buildMsg(
           'last N days', ['30'], locale, localeFallback);
-    case DateRangeType.LAST_60_DAYS:
+    case DateRangeType.last60Days:
       return IntlBasicDictionary.buildMsg(
           'last N days', ['60'], locale, localeFallback);
-    case DateRangeType.LAST_90_DAYS:
+    case DateRangeType.last90Days:
       return IntlBasicDictionary.buildMsg(
           'last N days', ['90'], locale, localeFallback);
-    case DateRangeType.LAST_MONTH:
+    case DateRangeType.lastMonth:
       return IntlBasicDictionary.msg('last month', locale, localeFallback);
-    case DateRangeType.THIS_MONTH:
+    case DateRangeType.thisMonth:
       return IntlBasicDictionary.msg('this month', locale, localeFallback);
     default:
       throw UnsupportedError("Can't handle: $rangeType");
@@ -40,12 +40,14 @@ String? getDateRangeTypeTitle(DateRangeType rangeType,
 }
 
 /// Returns [DateFormat] for [locale] and skeleton `yMMMd`.
+// ignore: non_constant_identifier_names
 DateFormat getDateFormat_yMMMd([IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
   return DateFormat.yMMMd(locale.code);
 }
 
 /// Returns [DateFormat] for [locale] and skeleton yMMMMd`.
+// ignore: non_constant_identifier_names
 DateFormat getDateFormat_yMMMMd([IntlLocale? locale]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
   return DateFormat.yMMMMd(locale.code);
@@ -76,7 +78,7 @@ DateSymbols? getLocaleDateSymbols([IntlLocale? locale]) {
 /// Returns [DateTimeWeekDay] for [locale].
 DateTimeWeekDay getFirstDayOfWeek([IntlLocale? locale]) {
   var dateSymbols = getLocaleDateSymbols(locale);
-  if (dateSymbols == null) return DateTimeWeekDay.Monday;
+  if (dateSymbols == null) return DateTimeWeekDay.monday;
   var firstdayofweek = dateSymbols.FIRSTDAYOFWEEK;
   var dateTimeWeekDay = getDateTimeWeekDay_from_ISO_8601_index(firstdayofweek)!;
   return dateTimeWeekDay;
@@ -136,34 +138,34 @@ String formatDateRangeText(
 
   var hasTimeText = hasTimePicker && !isFullDayTimeRange;
 
-  var timeStartText;
-  var timeEndText;
+  String? timeStartText;
+  String? timeEndText;
 
   if (hasTimeText) {
     timeStartText = timeFormat.format(startTime);
     timeEndText = timeFormat.format(endTime);
   }
 
-  var dateText;
+  String? dateText;
 
   if (mergeDate) {
     dateText = startText;
 
     if (hasTimeText) {
       if (timeStartText == timeEndText) {
-        dateText += ' $timeGroupOpen' + timeStartText + timeGroupClose;
+        dateText += ' $timeGroupOpen' + timeStartText! + timeGroupClose;
       } else {
         dateText += ' $timeGroupOpen' +
-            timeStartText +
+            timeStartText! +
             ' - ' +
-            timeEndText +
+            timeEndText! +
             timeGroupClose;
       }
     }
   } else {
     if (hasTimeText) {
-      startText += ' $timeGroupOpen' + timeStartText + timeGroupClose;
-      endText += ' $timeGroupOpen' + timeEndText + timeGroupClose;
+      startText += ' $timeGroupOpen' + timeStartText! + timeGroupClose;
+      endText += ' $timeGroupOpen' + timeEndText! + timeGroupClose;
     }
 
     dateText = '$startText - $endText';

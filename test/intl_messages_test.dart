@@ -427,84 +427,78 @@ void main() {
     setUp(() {});
 
     test('getDateRangeTypeTitle', () {
-      expect(getDateRangeTypeTitle(DateRangeType.TODAY, IntlLocale.code('en')),
+      expect(getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('en')),
           equals('today'));
-      expect(getDateRangeTypeTitle(DateRangeType.TODAY, IntlLocale.code('pt')),
+      expect(getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('pt')),
           equals('hoje'));
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.YESTERDAY, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('en')),
           equals('yesterday'));
       expect(
-          getDateRangeTypeTitle(DateRangeType.YESTERDAY, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('pt')),
           equals('ontem'));
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.LAST_7_DAYS, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('en')),
           equals('last 7 days'));
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.LAST_7_DAYS, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('pt')),
           equals('últimos 7 dias'));
 
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_30_DAYS, IntlLocale.code('en')),
+              DateRangeType.last30Days, IntlLocale.code('en')),
           equals('last 30 days'));
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_30_DAYS, IntlLocale.code('pt')),
+              DateRangeType.last30Days, IntlLocale.code('pt')),
           equals('últimos 30 dias'));
 
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_60_DAYS, IntlLocale.code('en')),
+              DateRangeType.last60Days, IntlLocale.code('en')),
           equals('last 60 days'));
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_60_DAYS, IntlLocale.code('pt')),
+              DateRangeType.last60Days, IntlLocale.code('pt')),
           equals('últimos 60 dias'));
 
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_90_DAYS, IntlLocale.code('en')),
+              DateRangeType.last90Days, IntlLocale.code('en')),
           equals('last 90 days'));
       expect(
           getDateRangeTypeTitle(
-              DateRangeType.LAST_90_DAYS, IntlLocale.code('pt')),
+              DateRangeType.last90Days, IntlLocale.code('pt')),
           equals('últimos 90 dias'));
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.LAST_WEEK, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('en')),
           equals('last week'));
       expect(
-          getDateRangeTypeTitle(DateRangeType.LAST_WEEK, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('pt')),
           equals('última semana'));
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.THIS_WEEK, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('en')),
           equals('this week'));
       expect(
-          getDateRangeTypeTitle(DateRangeType.THIS_WEEK, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('pt')),
           equals('esta semana'));
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.LAST_MONTH, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('en')),
           equals('last month'));
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.LAST_MONTH, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('pt')),
           equals('último mês'));
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.THIS_MONTH, IntlLocale.code('en')),
+          getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('en')),
           equals('this month'));
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.THIS_MONTH, IntlLocale.code('pt')),
+          getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('pt')),
           equals('este mês'));
     });
   });

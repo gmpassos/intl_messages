@@ -47,7 +47,7 @@ class IntlResourceDiscover {
   Future<List<IntlLocale>> _getLanguagesToLookup() async {
     if (_languagesToLookup != null) return _languagesToLookup!;
 
-    var list = List<IntlLocale>.from(_ALL_LOCALES);
+    var list = List<IntlLocale>.from(_allLocales);
 
     var defined = await _getDefinedLocales();
     if (defined != null && defined.isNotEmpty) {
@@ -100,7 +100,7 @@ class IntlResourceDiscover {
         content = content.trim();
         if (content.isEmpty) return <String>[];
         var list = content
-            .split(RegExp(r'[,;\s\|]+', multiLine: true))
+            .split(RegExp(r'[,;\s|]+', multiLine: true))
             .where((l) => l.isNotEmpty)
             .toList();
         return list;
@@ -354,14 +354,14 @@ class IntlMessages {
     }
   }
 
-  static final RegExp _MESSAGE_KEY_BLOCK = RegExp(
+  static final RegExp _messageKeyBlock = RegExp(
       r"""(?:^|[\r\n])([^\r\n]+?)=(?:'''[\r\n]?(.*?)[\r\n]?'''|"{3}[\r\n]?(.*?)[\r\n]?"{3})([^\r\n]*)""",
       multiLine: false, dotAll: true);
 
   List<Message> _parseContentProperties(String content) {
     var messages = <Message>[];
 
-    content = content.replaceAllMapped(_MESSAGE_KEY_BLOCK, (match) {
+    content = content.replaceAllMapped(_messageKeyBlock, (match) {
       var key = match.group(1);
       var value1 = match.group(2);
       var value2 = match.group(3);
@@ -504,7 +504,7 @@ class IntlMessages {
     _localesOrder = locales;
     _localesOrderLocale = currentLocale;
 
-    var allSameLang = List<IntlLocale>.from(_ALL_LOCALES);
+    var allSameLang = List<IntlLocale>.from(_allLocales);
     allSameLang.retainWhere((l) => l.language == currentLocale.language);
 
     allSameLang.remove(currentLocale);
@@ -516,7 +516,7 @@ class IntlMessages {
 
     if (fallbackLanguage.isNotEmpty &&
         currentLocale.language != fallbackLanguage) {
-      allFallback = List.from(_ALL_LOCALES);
+      allFallback = List.from(_allLocales);
       allFallback.retainWhere((l) => l.language == fallbackLanguage);
     }
 
@@ -794,7 +794,7 @@ class IntlMessages {
       }
     }
 
-    var fallbackMsg;
+    LocalizedMessage? fallbackMsg;
     if (fallbackMessages != null) {
       fallbackMsg = fallbackMessages!._msg(key);
     }
@@ -939,27 +939,27 @@ class LocalizedMessages {
   }
 }
 
-List<String> _ALL_LOCALES_CODES = ALL_LOCALES_CODES();
+List<String> _allLocalesCodes = allLocalesCodes();
 
-List<IntlLocale> _ALL_LOCALES =
-    _ALL_LOCALES_CODES.map((l) => IntlLocale(l)).toList();
+List<IntlLocale> _allLocales =
+    _allLocalesCodes.map((l) => IntlLocale(l)).toList();
 
 int _getLocaledIndex(String locale) {
-  var idx = _ALL_LOCALES_CODES.indexOf(locale);
+  var idx = _allLocalesCodes.indexOf(locale);
   if (idx >= 0) return idx;
 
   var intlLocale = IntlLocale.code(locale);
 
   locale = intlLocale.code;
 
-  idx = _ALL_LOCALES_CODES.indexOf(locale);
+  idx = _allLocalesCodes.indexOf(locale);
   if (idx >= 0) return idx;
 
   var lang = intlLocale._language;
   var prefix = '${lang}_';
 
-  for (var i = 0; i < _ALL_LOCALES_CODES.length; ++i) {
-    var l = _ALL_LOCALES_CODES[i];
+  for (var i = 0; i < _allLocalesCodes.length; ++i) {
+    var l = _allLocalesCodes[i];
 
     if (l == lang || l.startsWith(prefix)) {
       return i;
@@ -1248,7 +1248,7 @@ class Message {
     if (value is String) value = value.toString().trim();
 
     _value = MessageValue(value);
-    _description = description != null ? description.trim() : null;
+    _description = description?.trim();
   }
 
   Message.line(String line) {
@@ -1275,9 +1275,9 @@ class Message {
   }
 
   Message.entry(dynamic entry) {
-    var key;
-    var val;
-    var desc;
+    Object? key;
+    Object? val;
+    Object? desc;
 
     if (entry is List) {
       var list = entry;
@@ -1337,7 +1337,7 @@ class Message {
   }
 }
 
-enum MessageBlockBranchType { ZERO, ONE, TWO, MANY, OTHER, DEFAULT }
+enum MessageBlockBranchType { zero, one, two, many, other, defaultBranch }
 
 class MessageBlock {
   List<MessageBlockBranch> _branches;
@@ -1346,7 +1346,7 @@ class MessageBlock {
     _branches.sort((a, b) => a.compareTo(b));
   }
 
-  static final RegExp REGEXP_BLOCK_SPLITTER =
+  static final RegExp _regexpBlockSplitter =
       RegExp(r'([\\])?\|', multiLine: true);
 
   factory MessageBlock(String block) {
@@ -1355,7 +1355,7 @@ class MessageBlock {
     var appendToPrevBlock = false;
 
     var cursor = 0;
-    for (var m in REGEXP_BLOCK_SPLITTER.allMatches(block)) {
+    for (var m in _regexpBlockSplitter.allMatches(block)) {
       var prev = m.start > cursor ? block.substring(cursor, m.start) : '';
 
       var escapedChar = m.group(1);
@@ -1405,13 +1405,13 @@ class MessageBlock {
     }
 
     for (var branch in _branches) {
-      if (branch._type == MessageBlockBranchType.DEFAULT) {
+      if (branch._type == MessageBlockBranchType.defaultBranch) {
         return branch;
       }
     }
 
     for (var branch in _branches) {
-      if (branch._type == MessageBlockBranchType.OTHER) {
+      if (branch._type == MessageBlockBranchType.other) {
         return branch;
       }
     }
@@ -1450,7 +1450,7 @@ class MessageBlockBranch {
 
     if (idx < 0) {
       return MessageBlockBranch._(
-          MessageBlockBranchType.DEFAULT, null, MessageValue(branch));
+          MessageBlockBranchType.defaultBranch, null, MessageValue(branch));
     }
 
     var typeStr = branch.substring(0, idx).trim();
@@ -1466,14 +1466,14 @@ class MessageBlockBranch {
 
       return MessageBlockBranch._(
           EnumToString.fromString(MessageBlockBranchType.values, type) ??
-              MessageBlockBranchType.DEFAULT,
+              MessageBlockBranchType.defaultBranch,
           varName,
           MessageValue(value));
     } else {
       typeStr = typeStr.toUpperCase();
       return MessageBlockBranch._(
           EnumToString.fromString(MessageBlockBranchType.values, typeStr) ??
-              MessageBlockBranchType.DEFAULT,
+              MessageBlockBranchType.defaultBranch,
           null,
           MessageValue(value));
     }
@@ -1485,17 +1485,17 @@ class MessageBlockBranch {
 
   bool matches(Map<String, dynamic>? variables) {
     switch (_type) {
-      case MessageBlockBranchType.ZERO:
+      case MessageBlockBranchType.zero:
         return matchesZero(variables);
-      case MessageBlockBranchType.ONE:
+      case MessageBlockBranchType.one:
         return matchesOne(variables);
-      case MessageBlockBranchType.TWO:
+      case MessageBlockBranchType.two:
         return matchesTwo(variables);
-      case MessageBlockBranchType.MANY:
+      case MessageBlockBranchType.many:
         return matchesMany(variables);
-      case MessageBlockBranchType.OTHER:
+      case MessageBlockBranchType.other:
         return matchesOther(variables);
-      case MessageBlockBranchType.DEFAULT:
+      case MessageBlockBranchType.defaultBranch:
         return false;
       default:
         return false;
@@ -1639,7 +1639,7 @@ class MessageValue {
   @override
   int get hashCode => _values.hashCode;
 
-  static final RegExp REGEXP_BLOCK =
+  static final RegExp _regexpBlock =
       RegExp(r'\{((?:[^}]+|\\})+?)\}', multiLine: true);
 
   factory MessageValue(dynamic value) {
@@ -1656,10 +1656,10 @@ class MessageValue {
       var line = '$value';
 
       var cursor = 0;
-      for (var m in REGEXP_BLOCK.allMatches(line)) {
+      for (var m in _regexpBlock.allMatches(line)) {
         if (m.start > cursor) {
           var prev = line.substring(cursor, m.start);
-          built.addAll(_buildValue_fromString(prev));
+          built.addAll(_buildValueFromString(prev));
         }
 
         var block = m.group(1)!;
@@ -1670,21 +1670,20 @@ class MessageValue {
 
       if (line.length > cursor) {
         var tail = line.substring(cursor);
-        built.addAll(_buildValue_fromString(tail));
+        built.addAll(_buildValueFromString(tail));
       }
     }
 
     return MessageValue._(built);
   }
 
-  static final RegExp REGEXP_VAR_NAME =
-      RegExp(r'(\\)?\$(\w+)', multiLine: true);
+  static final RegExp _regexpVarName = RegExp(r'(\\)?\$(\w+)', multiLine: true);
 
-  static List<dynamic> _buildValue_fromString(String line) {
+  static List<dynamic> _buildValueFromString(String line) {
     var built = <dynamic>[];
 
     var cursor = 0;
-    for (var m in REGEXP_VAR_NAME.allMatches(line)) {
+    for (var m in _regexpVarName.allMatches(line)) {
       if (m.start > cursor) {
         var prev = line.substring(cursor, m.start);
         prev = _normalizeValueString(prev);

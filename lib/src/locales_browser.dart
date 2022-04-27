@@ -11,8 +11,8 @@ class LocalesManagerBrowser extends LocalesManager {
       [void Function(String locale)? onDefineLocale])
       : super(initializeLocaleFunction, onDefineLocale);
 
-  final String _LOCAL_KEY_locales_preferredLocale =
-      '__locales__preferredLocale';
+  // ignore: non_constant_identifier_names
+  final String _localKey_locales_preferredLocale = '__locales__preferredLocale';
 
   @override
   String defineLocaleFromSystem() {
@@ -22,12 +22,12 @@ class LocalesManagerBrowser extends LocalesManager {
 
   @override
   String? readPreferredLocale() {
-    return window.localStorage[_LOCAL_KEY_locales_preferredLocale];
+    return window.localStorage[_localKey_locales_preferredLocale];
   }
 
   @override
   void storePreferredLocale(String locale) {
-    window.localStorage[_LOCAL_KEY_locales_preferredLocale] = locale;
+    window.localStorage[_localKey_locales_preferredLocale] = locale;
   }
 
   @override

@@ -1,3 +1,12 @@
+## 2.0.2
+
+- Improve GitHub CI.
+- swiss_knife: ^3.1.1
+- lints: ^1.0.1
+- test: ^1.16.5
+- dependency_validator: ^3.1.0
+- coverage: ^1.0.4
+
 ## 2.0.1
 
 - Sound null safety compatibility.

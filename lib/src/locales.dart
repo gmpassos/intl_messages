@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
+// ignore: implementation_imports
 import 'package:intl/src/intl_helpers.dart';
 import 'package:swiss_knife/swiss_knife.dart';
 
 import 'intl_messages_base.dart';
 import 'locales_generic.dart' if (dart.library.html) 'locales_browser.dart';
 
-const List<String> _LATIN_LANGUAGES = [
+const List<String> _latinLanguages = [
   'en',
   'es',
   'fr',
@@ -22,7 +23,7 @@ const List<String> _LATIN_LANGUAGES = [
   'sv',
 ];
 
-const Map<String, String> _NATIVE_LOCALES_NAMES = {
+const Map<String, String> _nativeLocalesNames = {
   'en': 'English',
   'en_US': 'English (United States)',
   'en_GB': 'English (United Kingdom)',
@@ -63,7 +64,7 @@ const Map<String, String> _NATIVE_LOCALES_NAMES = {
   'ko_KR': '한국어 (대한민국)',
 };
 
-const Map<String, String> _ALL_LOCALES = {
+const Map<String, String> _allLocales = {
   'en': 'English',
   'en_US': 'English (United States)',
   'en_GB': 'English (United Kingdom)',
@@ -501,18 +502,18 @@ const Map<String, String> _ALL_LOCALES = {
 };
 
 /// List of locales for latin languages.
-List<String> LATIN_LANGUAGES() {
-  return List.from(_LATIN_LANGUAGES);
+List<String> latinLanguages() {
+  return List.from(_latinLanguages);
 }
 
 /// List with al known locales codes and names.
-Map<String, String> ALL_LOCALES() {
-  return Map.from(_ALL_LOCALES);
+Map<String, String> allLocales() {
+  return Map.from(_allLocales);
 }
 
 /// List will all locales codes.
-List<String> ALL_LOCALES_CODES() {
-  return List.from(_ALL_LOCALES.keys);
+List<String> allLocalesCodes() {
+  return List.from(_allLocales.keys);
 }
 
 /// Returns the name of a locale code.
@@ -524,16 +525,16 @@ String getLocaleName(String locale,
   locale = Intl.canonicalizedLocale(locale);
   var localeShort = Intl.shortLocale(locale);
 
-  var name = _ALL_LOCALES[locale];
+  var name = _allLocales[locale];
 
-  name ??= _ALL_LOCALES[localeShort];
+  name ??= _allLocales[localeShort];
 
   if (nativeName && name != null) {
     var nameGlobal = name;
 
     if (nativeLocale == '*') {
-      if (_NATIVE_LOCALES_NAMES.containsKey(locale)) {
-        name = _NATIVE_LOCALES_NAMES[locale];
+      if (_nativeLocalesNames.containsKey(locale)) {
+        name = _nativeLocalesNames[locale];
       }
     } else {
       if (nativeLocale == null || nativeLocale == '.') {
@@ -542,12 +543,12 @@ String getLocaleName(String locale,
       var nativeLocaleShort = Intl.shortLocale(nativeLocale);
 
       if (nativeLocale == locale || localeShort == nativeLocaleShort) {
-        name = _NATIVE_LOCALES_NAMES[locale];
+        name = _nativeLocalesNames[locale];
       }
     }
 
-    if (name != nameGlobal && !_LATIN_LANGUAGES.contains(localeShort)) {
-      var nameShort = _ALL_LOCALES[localeShort];
+    if (name != nameGlobal && !_latinLanguages.contains(localeShort)) {
+      var nameShort = _allLocales[localeShort];
 
       name = '$name -- $nameShort';
     }
@@ -562,7 +563,7 @@ List<String> getSimilarLocales(String locale) {
 
   var shortLocale = Intl.shortLocale(canonicalizedLocale);
 
-  var list = _ALL_LOCALES.keys
+  var list = _allLocales.keys
       .where((l) => l == shortLocale || l.startsWith('${shortLocale}_'))
       .toList(growable: true);
 
@@ -718,7 +719,7 @@ abstract class LocalesManager {
   }
 
   List<String> getNotInitializedLocales([bool includeFails = false]) {
-    var locales = ALL_LOCALES_CODES();
+    var locales = allLocalesCodes();
 
     if (includeFails) {
       locales.removeWhere((l) => _initializedLocales.containsKey(l));
