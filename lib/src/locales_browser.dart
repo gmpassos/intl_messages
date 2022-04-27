@@ -15,6 +15,9 @@ class LocalesManagerBrowser extends LocalesManager {
   final String _localKey_locales_preferredLocale = '__locales__preferredLocale';
 
   @override
+  final bool isBrowserURI = true;
+
+  @override
   String defineLocaleFromSystem() {
     findSystemLocale();
     return Intl.systemLocale;

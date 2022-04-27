@@ -9,6 +9,9 @@ class LocalesManagerGeneric extends LocalesManager {
       : super(initializeLocaleFunction, onDefineLocale);
 
   @override
+  final bool isBrowserURI = false;
+
+  @override
   String defineLocaleFromSystem() {
     return Intl.systemLocale;
   }

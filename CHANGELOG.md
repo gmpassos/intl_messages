@@ -1,6 +1,7 @@
 ## 2.0.2
 
 - Improve GitHub CI.
+- Added browser tests.
 - swiss_knife: ^3.1.1
 - lints: ^1.0.1
 - test: ^1.16.5

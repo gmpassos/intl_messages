@@ -4,7 +4,12 @@ import 'package:test/test.dart';
 
 void main() {
   group('Message', () {
-    setUp(() {});
+    LocalesManager? localesManager;
+
+    setUpAll(() async {
+      localesManager = _createLocalesManager();
+      expect(localesManager, isNotNull);
+    });
 
     test('Message.keyValue[simple]', () {
       var msg = Message.keyValue('foo', 'bar');
@@ -101,10 +106,20 @@ void main() {
   });
 
   group('IntlResourceDiscover', () {
-    setUp(() {});
+    LocalesManager? localesManager;
+    String? testLocalesBaseUri;
+
+    setUpAll(() async {
+      localesManager = _createLocalesManager();
+      expect(localesManager, isNotNull);
+      testLocalesBaseUri = localesManager!.testLocalesBaseUri;
+    });
 
     test('IntlResourceDiscover.findWithLocales', () async {
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      print(discover);
+
       var resources = await discover.findWithLocales(['fr']);
       print(resources.map((r) => r.uri).toList());
 
@@ -115,10 +130,18 @@ void main() {
   });
 
   group('IntlResourceDiscover', () {
-    setUp(() {});
+    LocalesManager? localesManager;
+    String? testLocalesBaseUri;
+
+    setUpAll(() async {
+      localesManager = _createLocalesManager();
+      expect(localesManager, isNotNull);
+      testLocalesBaseUri = localesManager!.testLocalesBaseUri;
+    });
 
     test('IntlResourceDiscover.findAll', () async {
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
       var resources = await discover.findAll();
       print(resources.map((r) => r.uri).toList());
 
@@ -128,7 +151,8 @@ void main() {
     });
 
     test('IntlResourceDiscover.findWithLocales', () async {
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
       var resources = await discover.findWithLocales(['fr']);
       print(resources.map((r) => r.uri).toList());
 
@@ -139,7 +163,14 @@ void main() {
   });
 
   group('IntlMessages', () {
-    setUp(() {});
+    LocalesManager? localesManager;
+    String? testLocalesBaseUri;
+
+    setUpAll(() async {
+      localesManager = _createLocalesManager();
+      expect(localesManager, isNotNull);
+      testLocalesBaseUri = localesManager!.testLocalesBaseUri;
+    });
 
     test('IntlMessages.registerMessagesResourcesContents', () async {
       IntlLocale.setDefaultLocale('EN');
@@ -147,7 +178,8 @@ void main() {
       var package = IntlMessages.package('test-rsc1');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
 
       var resources = await discover.findAll();
       expect(resources.length, equals(2));
@@ -167,7 +199,8 @@ void main() {
       var package = IntlMessages.package('test-rsc2');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
 
       var reg = await package.findAndRegisterMessagesResources(discover);
       expect(reg, equals(true));
@@ -184,7 +217,8 @@ void main() {
       var package = IntlMessages.package('test-rsc3');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
 
       var reg = await (package
           .findAndRegisterMessagesResourcesWithLocales(discover, ['fr']));
@@ -202,7 +236,8 @@ void main() {
       var package = IntlMessages.package('test-disc1');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover = IntlResourceDiscover('test/test-', '.intl');
+      var discover =
+          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
       var reg = package.registerResourceDiscover(discover);
 
       var regComplete = reg.whenComplete(() {
@@ -502,4 +537,11 @@ void main() {
           equals('este mês'));
     });
   });
+}
+
+LocalesManager _createLocalesManager() =>
+    createLocalesManager((locale) async => ['en', 'fr'].contains(locale));
+
+extension _LocalesManagerExtension on LocalesManager {
+  String get testLocalesBaseUri => isBrowserURI ? '' : 'test/';
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
+
 // ignore: implementation_imports
 import 'package:intl/src/intl_helpers.dart';
 import 'package:swiss_knife/swiss_knife.dart';
@@ -692,6 +693,9 @@ abstract class LocalesManager {
 
     _instances.add(this);
   }
+
+  /// Returns `true` if locales URI are resolved in a browser.
+  bool get isBrowserURI;
 
   bool isInitializedLocale(String locale) {
     return _initializedLocales.containsKey(locale) &&
