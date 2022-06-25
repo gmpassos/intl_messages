@@ -153,19 +153,16 @@ String formatDateRangeText(
 
     if (hasTimeText) {
       if (timeStartText == timeEndText) {
-        dateText += ' $timeGroupOpen' + timeStartText! + timeGroupClose;
+        dateText += ' $timeGroupOpen${timeStartText!}$timeGroupClose';
       } else {
-        dateText += ' $timeGroupOpen' +
-            timeStartText! +
-            ' - ' +
-            timeEndText! +
-            timeGroupClose;
+        dateText +=
+            ' $timeGroupOpen${timeStartText!} - ${timeEndText!}$timeGroupClose';
       }
     }
   } else {
     if (hasTimeText) {
-      startText += ' $timeGroupOpen' + timeStartText! + timeGroupClose;
-      endText += ' $timeGroupOpen' + timeEndText! + timeGroupClose;
+      startText += ' $timeGroupOpen${timeStartText!}$timeGroupClose';
+      endText += ' $timeGroupOpen${timeEndText!}$timeGroupClose';
     }
 
     dateText = '$startText - $endText';
