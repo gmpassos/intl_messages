@@ -1,3 +1,10 @@
+## 2.0.3
+
+- `IntlBasicDictionary`: added week related words.
+- lints: ^2.0.0
+- test: ^1.21.3
+- coverage: ^1.4.0
+
 ## 2.0.2
 
 - Improve GitHub CI.

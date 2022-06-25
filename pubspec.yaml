@@ -1,6 +1,6 @@
 name: intl_messages
 description: Simple and easy internationalization and localization messages framework for Dart (integrated with package 'intl').
-version: 2.0.2
+version: 2.0.3
 homepage: https://github.com/gmpassos/intl_messages
 
 environment:
@@ -13,10 +13,10 @@ dependencies:
   swiss_knife: ^3.1.1
 
 dev_dependencies:
-  lints: ^1.0.1
-  test: ^1.16.5
+  lints: ^2.0.0
+  test: ^1.21.3
   dependency_validator: ^3.1.0
-  coverage: ^1.0.4
+  coverage: ^1.4.0
 
 
 #dependency_overrides:
