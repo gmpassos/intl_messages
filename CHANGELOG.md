@@ -1,3 +1,13 @@
+## 2.0.4
+
+- Added `CountryInfo`:
+  - All countries info: `name`, `code` and `dialCode`. 
+- swiss_knife: ^3.1.2
+- lints: ^2.0.1
+- test: ^1.22.0
+- dependency_validator: ^3.2.2
+- coverage: ^1.6.1
+
 ## 2.0.3
 
 - `IntlBasicDictionary`: added week related words.
