@@ -1,3 +1,9 @@
+## 2.0.5
+
+- intl: ^0.18.0
+- swiss_knife: ^3.1.3
+- test: ^1.22.1
+
 ## 2.0.4
 
 - Added `CountryInfo`:
