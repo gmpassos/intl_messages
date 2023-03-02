@@ -1,3 +1,11 @@
+## 2.0.6
+
+- Optimize internal asynchrnous call.
+  - Optimize resolution and download of resources.
+- test: ^1.23.1
+- coverage: ^1.6.3
+- async_extension: ^1.1.0
+
 ## 2.0.5
 
 - intl: ^0.18.0

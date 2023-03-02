@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:async_extension/async_extension.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:intl/intl.dart';
 import 'package:resource_portable/resource.dart' show Resource;
@@ -37,49 +38,56 @@ class IntlResourceDiscover {
   /// [resourcePathSuffix] The suffix path of the resource file.
   IntlResourceDiscover(this.resourcePathPrefix, [this.resourcePathSuffix = '']);
 
+  List<String>? _languagesCodesToLookup;
+
+  FutureOr<List<String>> _getLanguagesCodesToLookup() {
+    final languagesCodesToLookup = _languagesCodesToLookup;
+    if (languagesCodesToLookup != null) return languagesCodesToLookup;
+
+    return _getLanguagesToLookup().resolveMapped((list) {
+      return _languagesCodesToLookup = list.map((l) => l.code).toList();
+    });
+  }
+
   List<IntlLocale>? _languagesToLookup;
 
-  Future<List<String>> _getLanguagesCodesToLookup() async {
-    var list = (await _getLanguagesToLookup());
-    return list.map((l) => l.code).toList();
+  FutureOr<List<IntlLocale>> _getLanguagesToLookup() {
+    final languagesToLookup = _languagesToLookup;
+    if (languagesToLookup != null) return languagesToLookup;
+
+    final list = List<IntlLocale>.from(_allLocales);
+
+    return _getDefinedLocales().resolveMapped((defined) {
+      if (defined.isNotEmpty) {
+        list.retainWhere((l) => defined.contains(l));
+      }
+
+      _languagesToLookup = list;
+      return list;
+    });
   }
 
-  Future<List<IntlLocale>> _getLanguagesToLookup() async {
-    if (_languagesToLookup != null) return _languagesToLookup!;
+  FutureOr<List<IntlLocale>>? _definedLocales;
 
-    var list = List<IntlLocale>.from(_allLocales);
+  FutureOr<List<IntlLocale>> _getDefinedLocales() {
+    var definedLocales = _definedLocales;
+    if (definedLocales != null) return definedLocales;
 
-    var defined = await _getDefinedLocales();
-    if (defined != null && defined.isNotEmpty) {
-      list.retainWhere((l) => defined.contains(l));
-    }
+    _definedLocales = definedLocales = _findDefinedLocales();
 
-    _languagesToLookup = list;
+    definedLocales.then((locales) {
+      _definedLocales = locales;
+    });
 
-    return list;
+    return definedLocales;
   }
 
-  List<IntlLocale>? _definedLanguages;
-
-  Future<List<String>>? _findDefinedLocalesFuture;
-
-  Future<List<IntlLocale>?> _getDefinedLocales() async {
-    if (_definedLanguages != null) return _definedLanguages;
-
-    _findDefinedLocalesFuture ??= _findDefinedLocales();
-
-    var list = await _findDefinedLocalesFuture!;
-
-    if (_definedLanguages != null) return _definedLanguages;
-
-    _definedLanguages = list.map((l) => IntlLocale(l)).toList();
-
-    _findDefinedLocalesFuture = null;
-
-    return _definedLanguages;
+  Future<List<IntlLocale>> _findDefinedLocales() async {
+    var list = await _findDefinedLocalesNames();
+    return list.map((l) => IntlLocale(l)).toList();
   }
 
-  Future<List<String>> _findDefinedLocales() async {
+  Future<List<String>> _findDefinedLocalesNames() async {
     var resourcePath = '${resourcePathPrefix}locales$resourcePathSuffix';
 
     print('Find defined locales> $resourcePath');
@@ -120,20 +128,37 @@ class IntlResourceDiscover {
   /// Clears the cache used by [find].
   void clearFindCache() {
     _languagesToLookup = null;
-    _definedLanguages = null;
+    _definedLocales = null;
     _findCache.clear();
+    _finding.clear();
   }
 
+  final Map<String, Future<IntlResourceContent?>> _finding = {};
+
   /// Finds the resource with [locale].
-  Future<IntlResourceContent?> find(String locale) async {
+  FutureOr<IntlResourceContent?> find(String locale) {
     if (locale.isEmpty) return null;
 
     var cached = _findCache[locale];
     if (cached != null) return cached;
 
-    var languagesToLookup = await _getLanguagesCodesToLookup();
-    if (!languagesToLookup.contains(locale)) return null;
+    return _getLanguagesCodesToLookup().resolveMapped((languagesToLookup) {
+      if (!languagesToLookup.contains(locale)) return null;
 
+      var finding = _finding[locale];
+      if (finding != null) return finding;
+
+      _finding[locale] = finding = _findImpl(locale);
+
+      finding.then((_) {
+        _finding.remove(locale);
+      });
+
+      return finding;
+    });
+  }
+
+  Future<IntlResourceContent?> _findImpl(String locale) async {
     var resourcePath = '$resourcePathPrefix$locale$resourcePathSuffix';
     var resource = Resource(resourcePath);
 
@@ -417,13 +442,11 @@ class IntlMessages {
   }
 
   /// Sets the main locale for this instance.
-  Future<bool> setLocale(dynamic locale) async {
+  FutureOr<bool> setLocale(dynamic locale) {
     var intlLocale = IntlLocale(locale);
-
     if (_currentLocale == intlLocale) return false;
 
     _currentLocale = intlLocale;
-
     return _defineLocalesOrder(true);
   }
 
@@ -462,13 +485,13 @@ class IntlMessages {
     return _possibleLocalesOrder;
   }
 
-  Future<bool> _defineLocalesOrder(bool callAutoDiscover) {
+  FutureOr<bool> _defineLocalesOrder(bool callAutoDiscover) {
     if (_defineLocalesOrderImpl()) {
       if (callAutoDiscover) {
         return autoDiscover();
       }
     }
-    return Future.value(false);
+    return false;
   }
 
   bool _defineLocalesOrderImpl() {
@@ -645,24 +668,55 @@ class IntlMessages {
     return changed;
   }
 
-  /// Starts auto discover process of resources and available locles.
-  Future<bool> autoDiscover() async {
-    if (_resourceDiscovers.isEmpty) return false;
+  Future<bool>? _autoDiscover;
 
-    var found = <IntlLocale>{};
+  /// Starts auto discover process of resources and available locles.
+  Future<bool> autoDiscover() =>
+      _autoDiscover ??= _autoDiscoverImpl().resolveMapped((ok) {
+        _autoDiscover = null;
+        return ok;
+      }).asFuture;
+
+  FutureOr<bool> _autoDiscoverImpl() {
+    if (_resourceDiscovers.isEmpty) return false;
 
     var possibleLocalesOrder = _getPossibleLocalesOrder(false)!;
 
-    for (var l in possibleLocalesOrder) {
-      var ret = await _autoFindLocalizedMessagesAsync(l);
-      if (ret) {
-        found.add(l);
-      }
-    }
+    // Force load of `_getLanguagesToLookup` for the 1st `IntlResourceDiscover`:
+    if (_resourceDiscovers.isNotEmpty) {
+      var r = _resourceDiscovers.first;
 
+      return r._getLanguagesToLookup().resolveMapped((_) {
+        return _autoDiscoverImpl2(possibleLocalesOrder);
+      });
+    } else {
+      return _autoDiscoverImpl2(possibleLocalesOrder);
+    }
+  }
+
+  FutureOr<bool> _autoDiscoverImpl2(List<IntlLocale> possibleLocalesOrder) {
+    var localesOkAsync = Map.fromEntries(possibleLocalesOrder.map((l) {
+      var retAsync = _autoFindLocalizedMessagesAsync(l);
+      return MapEntry(l, retAsync);
+    })).resolveAllValues();
+
+    return localesOkAsync.resolveMapped((localesOk) {
+      final found =
+          localesOk.entries.where((e) => e.value).map((e) => e.key).toSet();
+
+      if (_resourceDiscovers.isNotEmpty) {
+        return _autoDiscoverImpl3(found);
+      } else {
+        return found.isNotEmpty;
+      }
+    });
+  }
+
+  Future<bool> _autoDiscoverImpl3(Set<IntlLocale> found) async {
     for (var r in _resourceDiscovers) {
       var definedLocales = await r._getDefinedLocales();
-      if (definedLocales != null && definedLocales.isNotEmpty) {
+
+      if (definedLocales.isNotEmpty) {
         for (var l in definedLocales.where((e) => !found.contains(e))) {
           var ret = await _autoFindLocalizedMessagesAsync(l);
           if (ret) {
@@ -686,6 +740,7 @@ class IntlMessages {
     var futureFoundOverride = _overrideMessages != null
         ? _overrideMessages!.autoDiscoverLocale(locale)
         : Future.value(false);
+
     var futureFoundFallback = _fallbackMessages != null
         ? _fallbackMessages!.autoDiscoverLocale(locale)
         : Future.value(false);
@@ -703,7 +758,7 @@ class IntlMessages {
     _autoFindLocalizedMessagesLocales.clear();
   }
 
-  final Map<IntlLocale, Future<bool>> _autoFindLocalizedMessagesLocales = {};
+  final Map<IntlLocale, FutureOr<bool>> _autoFindLocalizedMessagesLocales = {};
 
   dynamic _autoFindLocalizedMessages(IntlLocale locale) {
     if (_resourceDiscovers.isEmpty) return false;
@@ -718,17 +773,21 @@ class IntlMessages {
     var future = _autoFindLocalizedMessagesImpl(locale);
     _autoFindLocalizedMessagesLocales[locale] = future;
 
+    future.then((ok) {
+      _autoFindLocalizedMessagesLocales[locale] = ok;
+    });
+
     return future;
   }
 
-  Future<bool> _autoFindLocalizedMessagesAsync(IntlLocale locale) async {
+  FutureOr<bool> _autoFindLocalizedMessagesAsync(IntlLocale locale) {
     if (_resourceDiscovers.isEmpty) return false;
 
     var prev = _autoFindLocalizedMessagesLocales[locale];
     if (prev != null) return prev;
 
     if (_localizedMessages.containsKey(locale)) {
-      prev = Future.value(true);
+      prev = true;
       _autoFindLocalizedMessagesLocales[locale] = prev;
       return prev;
     }
@@ -736,10 +795,31 @@ class IntlMessages {
     var future = _autoFindLocalizedMessagesImpl(locale);
     _autoFindLocalizedMessagesLocales[locale] = future;
 
+    future.then((ok) {
+      _autoFindLocalizedMessagesLocales[locale] = ok;
+    });
+
     return future;
   }
 
-  Future<bool> _autoFindLocalizedMessagesImpl(IntlLocale locale) async {
+  FutureOr<bool> _autoFindLocalizedMessagesImpl(IntlLocale locale) {
+    if (_resourceDiscovers.isEmpty) {
+      return false;
+    } else if (_resourceDiscovers.length == 1) {
+      var r = _resourceDiscovers.first;
+
+      return r.find(locale.code).resolveMapped((resource) {
+        if (resource != null) {
+          return registerMessagesResourceContent(resource);
+        }
+        return false;
+      });
+    } else {
+      return _autoFindLocalizedMessagesImpl2(locale);
+    }
+  }
+
+  Future<bool> _autoFindLocalizedMessagesImpl2(IntlLocale locale) async {
     for (var r in _resourceDiscovers) {
       var resource = await r.find(locale.code);
 
@@ -1347,7 +1427,7 @@ class MessageBlock {
   }
 
   static final RegExp _regexpBlockSplitter =
-      RegExp(r'([\\])?\|', multiLine: true);
+      RegExp(r'(\\)?\|', multiLine: true);
 
   factory MessageBlock(String block) {
     var parts = <String>[];

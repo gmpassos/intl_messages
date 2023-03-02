@@ -598,8 +598,7 @@ class LocaleInitializer {
 
     var locale = _locales[idx];
 
-    print(
-        'Trying to initialize locale[${idx + 1}/${_locales.length}]: $locale');
+    //print('Trying to initialize locale[${idx + 1}/${_locales.length}]: $locale');
 
     var future = initializeFunction(locale);
 
@@ -623,7 +622,7 @@ class LocaleInitializer {
   void _onInitialize(int idx, bool ok) {
     var locale = _locales[idx];
 
-    print('_onInitialize: $locale > $ok');
+    //print('_onInitialize: $locale > $ok');
 
     if (ok) {
       print('Locale initialized: $locale');
