@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:async_extension/async_extension.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:intl/intl.dart';
+import 'package:yaml/yaml.dart' as yaml;
 import 'package:resource_portable/resource.dart' show Resource;
 import 'package:swiss_knife/swiss_knife.dart';
 
@@ -329,6 +330,8 @@ class IntlMessages {
 
     if (isContentJSON(content)) {
       messages = _parseContentJSON(content);
+    } else if (isContentYAML(content)) {
+      messages = _parseContentYAML(content);
     } else if (isContentProperties(content)) {
       messages = _parseContentProperties(content);
     }
@@ -344,6 +347,19 @@ class IntlMessages {
     return content.startsWith('{') && content.endsWith('}');
   }
 
+  /// Identifies [content] with YAML format.
+  bool isContentYAML(String content) {
+    content = content
+        .replaceAll('\r', '\n')
+        .replaceAll(RegExp(r'(?:^|\n)[ \t]*#[^\n]*'), '\n');
+
+    content = content.replaceAll(RegExp(r'\n[ \t]*\n'), '\n\n');
+    content = content.replaceAll(RegExp(r'\n[ \t]*\n'), '\n\n');
+    content = content.replaceAll(RegExp(r'\n+'), '\n');
+
+    return RegExp(r'(?:^|\n)[ \t]*[\w.]+:').hasMatch(content);
+  }
+
   /// Identifies [content] with properties format.
   bool isContentProperties(String content) {
     content = content.trim();
@@ -351,7 +367,28 @@ class IntlMessages {
   }
 
   List<Message> _parseContentJSON(String content) {
-    var json = jsonDecode(content);
+    dynamic json;
+    try {
+      json = jsonDecode(content);
+    } catch (_) {
+      return _parseContentProperties(content);
+    }
+
+    return _parseContentFromJson(json, content);
+  }
+
+  List<Message> _parseContentYAML(String content) {
+    dynamic json;
+    try {
+      json = yaml.loadYaml(content);
+    } catch (_) {
+      return _parseContentProperties(content);
+    }
+
+    return _parseContentFromJson(json, content);
+  }
+
+  List<Message> _parseContentFromJson(json, String content) {
     if (json is Map) {
       var map = json;
       var messages = <Message>[];
@@ -848,8 +885,9 @@ class IntlMessages {
           variables: variables, variablesProvider: variablesProvider);
 
   /// Get a message with [key] and returns a corresponding [MessageBuilder].
-  MessageBuilder msg(String key) {
-    return MessageBuilder._(this, key);
+  MessageBuilder msg(String key, {Object? preferredLocale}) {
+    var locale = IntlLocale.from(preferredLocale);
+    return MessageBuilder._(this, key, locale);
   }
 
   /// Return as message as [String]. Same as `msg(key).build(variables)`.
@@ -857,13 +895,25 @@ class IntlMessages {
     return msg(key).build(variables);
   }
 
-  LocalizedMessage? _msg(String key) {
+  LocalizedMessage? _msg(String key, IntlLocale? preferredLocale) {
     if (_overrideMessages != null) {
-      var msg = _overrideMessages!._msg(key);
+      var msg = _overrideMessages!._msg(key, preferredLocale);
       if (msg != null) return msg;
     }
 
     var localesOrder = _getLocalesOrder(false)!;
+
+    if (preferredLocale != null) {
+      var preferredLocales = localesOrder
+          .where((e) => e.language == preferredLocale.language)
+          .toList();
+
+      if (preferredLocales.isNotEmpty) {
+        localesOrder = localesOrder.toList();
+        localesOrder.removeWhere((e) => preferredLocales.contains(e));
+        localesOrder.insertAll(0, preferredLocales);
+      }
+    }
 
     for (var l in localesOrder) {
       var localizedMessage = _localizedMessages[l];
@@ -876,7 +926,7 @@ class IntlMessages {
 
     LocalizedMessage? fallbackMsg;
     if (fallbackMessages != null) {
-      fallbackMsg = fallbackMessages!._msg(key);
+      fallbackMsg = fallbackMessages!._msg(key, preferredLocale);
     }
 
     for (var l in _getPossibleLocalesOrder(false)!) {
@@ -925,16 +975,23 @@ class MessageBuilder {
 
   final String _key;
 
-  MessageBuilder._(this._intlMessages, this._key);
+  /// Returns the preferred locale for this [MessageBuilder].
+  final IntlLocale? preferredLocale;
+
+  MessageBuilder._(this._intlMessages, this._key, this.preferredLocale);
 
   IntlMessages get intlMessages => _intlMessages;
 
+  /// Returns the message key.
   String get key => _key;
 
-  LocalizedMessage? get message => _intlMessages._msg(key);
+  /// Returns the localized message.
+  LocalizedMessage? get message => _intlMessages._msg(key, preferredLocale);
 
   String? get description => _intlMessages._description(key);
 
+  /// Builds this message.
+  /// - Allows optional [variables].
   String build([Map<String, dynamic>? variables]) {
     var msg = message;
     if (msg == null) {

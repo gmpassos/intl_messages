@@ -1,3 +1,12 @@
+## 2.0.7
+
+- `IntlMessages`:
+  - `registerMessages`: add support for YAML.
+    - Added `isContentYAML`.
+  - `msg`: added optional parameter `preferredLocale`.
+- collection: ^1.17.0
+- yaml: ^3.1.1
+
 ## 2.0.6
 
 - Optimize internal asynchrnous call.
