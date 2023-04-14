@@ -1,5 +1,8 @@
 ## 2.0.8
 
+- Fix issue when all initial locales (from `getPossibleLocalesSequenceGeneric`) are not supported.
+  - A supported locale still need to be loaded.
+- New `IntlMessageLookup` is set as `messageLookup` (if not set yet).
 - resource_portable: ^3.0.2
 - swiss_knife: ^3.1.5
 
