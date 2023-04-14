@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async_extension/async_extension.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
@@ -571,19 +572,63 @@ List<String> getSimilarLocales(String locale) {
   return list;
 }
 
+class IntlMessageLookup implements MessageLookup {
+  final LocalesManager localesManager;
+
+  IntlMessageLookup(this.localesManager);
+
+  bool isLoadedLocale(String locale) {
+    var init = localesManager.isInitializedLocale(locale);
+    if (init) return true;
+
+    var toLookup =
+        localesManager.languagesToLookup.any((l) => l.code == locale);
+    return toLookup;
+  }
+
+  @override
+  void addLocale(String localeName, Function findLocale) {
+    throw UnsupportedError("Can't add locale from `IntlMessageLookup`");
+  }
+
+  @override
+  String? lookupMessage(String? messageText, String? locale, String? name,
+      List<Object>? args, String? meaning,
+      {MessageIfAbsent? ifAbsent}) {
+    if (name == null) return messageText;
+
+    for (var e in IntlMessages.instances.values) {
+      var msg = e.msg(name);
+      if (msg.exists) {
+        var text = msg.build();
+        return text;
+      }
+    }
+
+    return messageText;
+  }
+}
+
 typedef LocaleInitializeFunction = Future<bool> Function(String locale);
 
 /// Initializes the locale, including packages, and defines default locale
 /// using current system and platform defaults.
 class LocaleInitializer {
+  final LocalesManager localesManager;
+
   final LocaleInitializeFunction initializeFunction;
 
   final List<String> _locales;
 
   late Completer<bool> _completer;
 
-  LocaleInitializer(this.initializeFunction, this._locales) {
+  LocaleInitializer(
+      this.localesManager, this.initializeFunction, this._locales) {
     _completer = Completer();
+
+    if (messageLookup is UninitializedLocaleData) {
+      messageLookup = IntlMessageLookup(localesManager);
+    }
 
     _initializeIdx(0);
   }
@@ -592,8 +637,25 @@ class LocaleInitializer {
 
   void _initializeIdx(int idx) {
     if (idx >= _locales.length) {
-      _completer.complete(false);
-      return;
+      var languagesToLookup = localesManager._languagesToLookup;
+
+      var extraLocales = false;
+      if (languagesToLookup.isNotEmpty) {
+        for (var l in languagesToLookup) {
+          var code = l.code;
+          if (!_locales.contains(code)) {
+            _locales.add(code);
+            extraLocales = true;
+          }
+        }
+      }
+
+      if (!extraLocales) {
+        _completer.complete(false);
+        return;
+      }
+
+      assert(idx < _locales.length);
     }
 
     var locale = _locales[idx];
@@ -613,7 +675,7 @@ class LocaleInitializer {
 
   final List<String> _failedLocales = [];
 
-  List<String> get failedLocales => List.from(_failedLocales);
+  List<String> get failedLocales => _failedLocales.toList();
 
   String? _initializedLocale;
 
@@ -810,7 +872,7 @@ abstract class LocalesManager {
     var possibleLocalesSequence = getLocalesSequence(locale);
 
     var localeInitializer = LocaleInitializer(
-        (s) => _callInitializeLocale(s, true), possibleLocalesSequence);
+        this, (s) => _callInitializeLocale(s, true), possibleLocalesSequence);
 
     localeInitializer.onFailLocale.listen((l) {
       _initializedLocales[l] = false;
@@ -830,6 +892,9 @@ abstract class LocalesManager {
         }
 
         _onLocaleInitialized(locale);
+      } else {
+        print(
+            '** Failed to initialize locales> failedLocales: ${localeInitializer.failedLocales}');
       }
 
       return ok;
@@ -924,7 +989,7 @@ abstract class LocalesManager {
 
     var initOrder = getLocalesSequence(getCurrentLocale());
 
-    for (var l in List.from(initOrder)) {
+    for (var l in initOrder.toList(growable: false)) {
       var similarLocales = getSimilarLocales(l);
       similarLocales.removeWhere((s) => initOrder.contains(s));
       initOrder.addAll(similarLocales);
@@ -1001,13 +1066,23 @@ abstract class LocalesManager {
       }
     });
   }
+
+  final Set<IntlLocale> _languagesToLookup = <IntlLocale>{};
+
+  List<IntlLocale> get languagesToLookup => _languagesToLookup.toList();
+
+  void addLanguagesToLookup(List<IntlLocale> locales) {
+    _languagesToLookup.addAll(locales);
+  }
 }
 
 /// Returns [true] if [locale] is loaded or [def].
 bool isLoadedLocale(String locale, [bool def = false]) {
   var lookup = messageLookup;
 
-  if (lookup is CompositeMessageLookup) {
+  if (lookup is IntlMessageLookup) {
+    return lookup.isLoadedLocale(locale);
+  } else if (lookup is CompositeMessageLookup) {
     return lookup.availableMessages.containsKey(locale);
   }
 

@@ -52,19 +52,28 @@ class IntlResourceDiscover {
 
   List<IntlLocale>? _languagesToLookup;
 
+  FutureOr<List<IntlLocale>>? _languagesToLookupAsync;
+
   FutureOr<List<IntlLocale>> _getLanguagesToLookup() {
     final languagesToLookup = _languagesToLookup;
     if (languagesToLookup != null) return languagesToLookup;
 
-    final list = List<IntlLocale>.from(_allLocales);
+    final toLookup = _allLocales.toList();
 
-    return _getDefinedLocales().resolveMapped((defined) {
+    return _languagesToLookupAsync ??=
+        _getDefinedLocales().resolveMapped((defined) {
       if (defined.isNotEmpty) {
-        list.retainWhere((l) => defined.contains(l));
+        toLookup.retainWhere((l) => defined.contains(l));
+
+        var localesManagers = LocalesManager.instances();
+        for (var l in localesManagers) {
+          l.addLanguagesToLookup(toLookup);
+        }
       }
 
-      _languagesToLookup = list;
-      return list;
+      _languagesToLookup = toLookup;
+      _languagesToLookupAsync = null;
+      return toLookup;
     });
   }
 
@@ -707,7 +716,7 @@ class IntlMessages {
 
   Future<bool>? _autoDiscover;
 
-  /// Starts auto discover process of resources and available locles.
+  /// Starts auto discover process of resources and available locales.
   Future<bool> autoDiscover() =>
       _autoDiscover ??= _autoDiscoverImpl().resolveMapped((ok) {
         _autoDiscover = null;
@@ -987,6 +996,9 @@ class MessageBuilder {
 
   /// Returns the localized message.
   LocalizedMessage? get message => _intlMessages._msg(key, preferredLocale);
+
+  /// Returns `true` if a localized [message] exists for [key].
+  bool get exists => message != null;
 
   String? get description => _intlMessages._description(key);
 

@@ -1,3 +1,8 @@
+## 2.0.8
+
+- resource_portable: ^3.0.2
+- swiss_knife: ^3.1.5
+
 ## 2.0.7
 
 - `IntlMessages`:
