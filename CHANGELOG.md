@@ -1,3 +1,14 @@
+## 2.1.0
+
+- Added executable `intl_messages` (CLI Tool).
+- sdk: '>=2.18.0 <3.0.0'
+- intl: ^0.18.1
+- args: ^2.4.0
+- pubspec: ^2.3.0
+- path: ^1.8.3
+- collection: ^1.17.1
+- test: ^1.24.1
+
 ## 2.0.8
 
 - Fix issue when all initial locales (from `getPossibleLocalesSequenceGeneric`) are not supported.
