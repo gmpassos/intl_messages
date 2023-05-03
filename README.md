@@ -21,6 +21,8 @@ A Simple and easy library for Message Internationalization and Localization (I18
 
 - Global notification of locale change and registration/discovery of localized messages.
 
+- Translation tools (including integration with OpenAI and ChatGPT).
+
 ## Usage
 
 A simple usage example:
