@@ -1,3 +1,9 @@
+## 2.1.1
+
+- Added `TranslatorOpenAI` and `TranslatorConsole`.
+- CLI `intl_messages`:
+  - Added command `fix` with `openai` and `console` translators.
+
 ## 2.1.0
 
 - Added executable `intl_messages` (CLI Tool).
