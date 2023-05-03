@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'intl_messages_base.dart';
@@ -8,11 +9,11 @@ class TranslatorConsole extends Translator {
   TranslatorConsole({super.logger});
 
   @override
-  Future<Map<String, String>?> translate(
-      Map<String, String> entries, IntlLocale locale,
-      {bool confirm = true}) async {
-    var language = resolveLocaleName(locale);
+  int get maxBlockLength => 999999;
 
+  @override
+  Future<Map<String, String>?> translateBlock(Map<String, String> entries,
+      IntlLocale locale, String language, confirm) async {
     stdout.write(
         '-------------------------------------------------------------\n');
 
@@ -22,8 +23,8 @@ class TranslatorConsole extends Translator {
       var k = e.key;
       var m = await promptTranslation(k, e.value, locale,
           confirm: confirm, language: language);
-      entriesTranslated[k] = m;
 
+      entriesTranslated[k] = m;
       log('Translated> $k: $m');
     }
 

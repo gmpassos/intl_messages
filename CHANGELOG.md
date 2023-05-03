@@ -1,3 +1,8 @@
+## 2.1.2
+
+- `TranslatorOpenAI`:
+  - Fix: split requests into blocks of 500 characters;
+
 ## 2.1.1
 
 - Added `TranslatorOpenAI` and `TranslatorConsole`.
