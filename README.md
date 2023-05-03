@@ -92,6 +92,23 @@ Here's an example of plural usage with variable `n`:
     }
     ```
 
+## CLI Tool
+
+You can use the `intl_messages` CLI tool:
+
+Check an `.intl` file using a reference file:
+```shell
+  $> intl_messages check --ref msgs-en.intl -f msgs-fr.intl
+```
+
+Format an `.intl` file entries using a reference file:
+```shell
+  $> intl_messages format --ref msgs-en.intl -f msgs-fr.intl --overwrite
+```
+Fix an `.intl` file using a reference file and OpenAI (ChatGPT):
+```shell
+  $> intl_messages fix --ref msgs-en.intl -f msgs-fr.intl -t openai --overwrite
+```
 
 ## Features and bugs
 
