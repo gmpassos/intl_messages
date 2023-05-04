@@ -6,7 +6,7 @@ import 'translator.dart';
 
 /// Console translator.
 class TranslatorConsole extends Translator {
-  TranslatorConsole({super.logger});
+  TranslatorConsole({super.logger}) : super(translateBlocksInParallel: false);
 
   @override
   int get maxBlockLength => 999999;

@@ -29,7 +29,12 @@ class TranslatorOpenAI extends Translator {
       this.model = 'gpt-3.5-turbo',
       this.maxBlockLength = 500,
       this.role = OpenAIChatMessageRole.user,
-      super.logger});
+      int maxParallelTranslations = 3,
+      super.logger})
+      : super(
+            translateBlocksInParallel: true,
+            maxParallelTranslations:
+                math.max(1, math.min(maxParallelTranslations, 10)));
 
   @override
   Future<Map<String, String>?> translateBlock(Map<String, String> entries,

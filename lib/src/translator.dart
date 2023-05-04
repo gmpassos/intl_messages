@@ -8,7 +8,13 @@ abstract class Translator {
   /// Optional logger.
   final void Function(Object? o)? logger;
 
-  Translator({this.logger});
+  final bool translateBlocksInParallel;
+  final int maxParallelTranslations;
+
+  Translator(
+      {this.logger,
+      this.translateBlocksInParallel = false,
+      this.maxParallelTranslations = 0});
 
   /// Logs [o ] calling [logger].
   void log(Object o) {
@@ -31,16 +37,77 @@ abstract class Translator {
 
     var blocks = splitBlocks(allEntries);
 
-    var results = blocks
-        .map((blk) =>
-            translateBlock(Map.fromEntries(blk), locale, language, confirm))
-        .resolveAll();
+    FutureOr<List<Map<String, String>?>> results;
+
+    if (translateBlocksInParallel && maxParallelTranslations != 1) {
+      if (maxParallelTranslations <= 0) {
+        results = _translateBlocksParallel(blocks, locale, language, confirm);
+      } else {
+        assert(maxParallelTranslations != 1);
+        results = _translateBlocksParallelLimited(
+            blocks, locale, language, confirm, maxParallelTranslations);
+      }
+    } else {
+      results = _translateBlocksInSequence(blocks, locale, language, confirm);
+    }
 
     return results.resolveMapped((results) {
       var allResults =
           results.whereNotNull().reduce((map, e) => map..addAll(e));
       return allResults;
     });
+  }
+
+  FutureOr<List<Map<String, String>?>> _translateBlocksParallel(
+      List<List<MapEntry<String, String>>> blocks,
+      IntlLocale locale,
+      String language,
+      bool confirm) {
+    var results = blocks
+        .map((blk) =>
+            translateBlock(Map.fromEntries(blk), locale, language, confirm))
+        .resolveAll();
+    return results;
+  }
+
+  Future<List<Map<String, String>?>> _translateBlocksParallelLimited(
+      List<List<MapEntry<String, String>>> blocks,
+      IntlLocale locale,
+      String language,
+      bool confirm,
+      int limit) async {
+    var split =
+        blocks.splitBeforeIndexed((i, e) => i > 0 && i % limit == 0).toList();
+
+    final allResults = <Map<String, String>?>[];
+
+    for (var blocks in split) {
+      var results = await blocks
+          .map((blk) =>
+              translateBlock(Map.fromEntries(blk), locale, language, confirm))
+          .resolveAll();
+
+      allResults.addAll(results);
+    }
+
+    return allResults;
+  }
+
+  Future<List<Map<String, String>?>> _translateBlocksInSequence(
+      List<List<MapEntry<String, String>>> blocks,
+      IntlLocale locale,
+      String language,
+      bool confirm) async {
+    final allResults = <Map<String, String>?>[];
+
+    for (var blk in blocks) {
+      var result =
+          await translateBlock(Map.fromEntries(blk), locale, language, confirm);
+
+      allResults.add(result);
+    }
+
+    return allResults;
   }
 
   /// Returns the maximum length of a block.

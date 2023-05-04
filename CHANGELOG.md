@@ -1,3 +1,11 @@
+## 2.1.3
+
+- `Translator`:
+  - Added fields: `translateBlocksInParallel` and `maxParallelTranslations`.
+- `TranslatorOpenAI`:
+  - `translateBlocksInParallel: true`
+  - `maxParallelTranslations = 3`
+
 ## 2.1.2
 
 - `TranslatorOpenAI`:
