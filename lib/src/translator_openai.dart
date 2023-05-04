@@ -45,8 +45,19 @@ class TranslatorOpenAI extends Translator {
       return '$k=$m';
     }).join('\n');
 
+    var headerKey = 'key';
+    if (entries.containsKey(headerKey)) {
+      for (var i = 0; i < 10000; ++i) {
+        headerKey = 'key__$i';
+        if (!entries.containsKey(headerKey)) break;
+      }
+    }
+
     var prompt =
-        'Translate the texts on each line after "=" into $language keeping the same format:\n\n$blk\n';
+        //'Translate to $language the text on each line preserving the text before "=" and translating the text after "=" keeping the same format:\n\n'
+        'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:\n\n'
+        'key=message\n'
+        '$blk\n';
 
     var content = await this.prompt(prompt);
     if (content == null || content.isEmpty) return null;

@@ -1,3 +1,8 @@
+## 2.1.4
+
+- `TranslatorOpenAI`:
+  - Improve translation prompt to avoid wrong responses.
+
 ## 2.1.3
 
 - `Translator`:
