@@ -1,22 +1,30 @@
-import 'intl_messages_base.dart';
-import 'locales.dart';
 import 'package:async_extension/async_extension.dart';
 import 'package:collection/collection.dart';
+
+import 'intl_messages_base.dart';
+import 'locales.dart';
+
+/// [Translator] logger.
+typedef TranslatorLogger = void Function(Object? o);
 
 /// Translator base class.
 abstract class Translator {
   /// Optional logger.
-  final void Function(Object? o)? logger;
+  final TranslatorLogger? logger;
+
+  /// Optional [Translator] cache.
+  final TranslatorCache? cache;
 
   final bool translateBlocksInParallel;
   final int maxParallelTranslations;
 
   Translator(
       {this.logger,
+      this.cache,
       this.translateBlocksInParallel = false,
       this.maxParallelTranslations = 0});
 
-  /// Logs [o ] calling [logger].
+  /// Logs [o] calling [logger].
   void log(Object o) {
     var logger = this.logger;
     if (logger != null) {
@@ -27,13 +35,91 @@ abstract class Translator {
   /// Resolves [locale] to the language name.
   String resolveLocaleName(IntlLocale locale) => getLocaleName(locale.code);
 
+  /// Returns the cached translations for [entries].
+  FutureOr<Map<String, String>?> getCachedEntries(
+    Map<String, String> entries,
+    IntlLocale fromLocale,
+    IntlLocale toLocale,
+  ) {
+    var cache = this.cache;
+    if (cache == null) return null;
+
+    var results = Map.fromEntries(entries.entries.map((e) {
+      var k = e.key;
+      var t = cache.get(k, e.value, fromLocale, toLocale);
+      return t != null ? MapEntry(k, t) : null;
+    }).whereNotNull())
+        .resolveAllValues();
+
+    return results.resolveMapped((map) {
+      var mapCached = Map<String, String>.fromEntries(map.entries.where((e) {
+        var m = e.value;
+        return m != null && m.trim().isNotEmpty;
+      }).map((e) => MapEntry(e.key, e.value!)));
+
+      return mapCached;
+    });
+  }
+
   /// Translates [entries] to [locale].
   FutureOr<Map<String, String>?> translate(
-      Map<String, String> entries, IntlLocale locale,
+      Map<String, String> entries, IntlLocale fromLocale, IntlLocale toLocale,
       {bool confirm = true}) {
-    String language = resolveLocaleName(locale);
+    if (fromLocale == toLocale) {
+      return entries;
+    }
 
-    var allEntries = entries.entries.toList();
+    var fromLanguage = resolveLocaleName(fromLocale);
+    var toLanguage = resolveLocaleName(toLocale);
+
+    if (fromLanguage == toLanguage) {
+      return entries;
+    }
+
+    var cachedTranslation = getCachedEntries(entries, fromLocale, toLocale);
+
+    if (cachedTranslation != null) {
+      return cachedTranslation.resolveMapped((cachedTranslation) =>
+          _translateEntries(entries, cachedTranslation, fromLocale, toLocale,
+              fromLanguage, toLanguage, confirm));
+    } else {
+      return _translateEntries(entries, null, fromLocale, toLocale,
+          fromLanguage, toLanguage, confirm);
+    }
+  }
+
+  FutureOr<Map<String, String>?> _translateEntries(
+      Map<String, String> entries,
+      Map<String, String>? cachedEntries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      bool confirm) {
+    var entriesToRequest = Map<String, String>.from(entries);
+    Map<String, String>? cachedTranslation;
+
+    if (cachedEntries != null && cachedEntries.length >= entries.length) {
+      var cachedTranslationEntries = entries.entries
+          .map((e) {
+            var k = e.key;
+            var m = cachedEntries[k];
+            return m != null && m.trim().isNotEmpty ? MapEntry(k, m) : null;
+          })
+          .whereNotNull()
+          .toList();
+
+      cachedTranslation = Map.fromEntries(cachedTranslationEntries);
+
+      if (cachedTranslation.length == entries.length) {
+        return cachedTranslation;
+      } else {
+        entriesToRequest
+            .removeWhere((k, _) => cachedTranslation!.containsKey(k));
+      }
+    }
+
+    var allEntries = entriesToRequest.entries.toList();
 
     var blocks = splitBlocks(allEntries);
 
@@ -41,39 +127,50 @@ abstract class Translator {
 
     if (translateBlocksInParallel && maxParallelTranslations != 1) {
       if (maxParallelTranslations <= 0) {
-        results = _translateBlocksParallel(blocks, locale, language, confirm);
+        results = _translateBlocksParallel(
+            blocks, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
       } else {
         assert(maxParallelTranslations != 1);
-        results = _translateBlocksParallelLimited(
-            blocks, locale, language, confirm, maxParallelTranslations);
+        results = _translateBlocksParallelLimited(blocks, fromLocale, toLocale,
+            fromLanguage, toLanguage, confirm, maxParallelTranslations);
       }
     } else {
-      results = _translateBlocksInSequence(blocks, locale, language, confirm);
+      results = _translateBlocksInSequence(
+          blocks, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
     }
 
     return results.resolveMapped((results) {
       var allResults =
           results.whereNotNull().reduce((map, e) => map..addAll(e));
+
+      if (cachedTranslation != null) {
+        allResults.addAll(cachedTranslation);
+      }
+
       return allResults;
     });
   }
 
   FutureOr<List<Map<String, String>?>> _translateBlocksParallel(
       List<List<MapEntry<String, String>>> blocks,
-      IntlLocale locale,
-      String language,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
       bool confirm) {
     var results = blocks
-        .map((blk) =>
-            translateBlock(Map.fromEntries(blk), locale, language, confirm))
+        .map((blk) => translateBlock(Map.fromEntries(blk), fromLocale, toLocale,
+            fromLanguage, toLanguage, confirm))
         .resolveAll();
     return results;
   }
 
   Future<List<Map<String, String>?>> _translateBlocksParallelLimited(
       List<List<MapEntry<String, String>>> blocks,
-      IntlLocale locale,
-      String language,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
       bool confirm,
       int limit) async {
     var split =
@@ -83,8 +180,8 @@ abstract class Translator {
 
     for (var blocks in split) {
       var results = await blocks
-          .map((blk) =>
-              translateBlock(Map.fromEntries(blk), locale, language, confirm))
+          .map((blk) => translateBlock(Map.fromEntries(blk), fromLocale,
+              toLocale, fromLanguage, toLanguage, confirm))
           .resolveAll();
 
       allResults.addAll(results);
@@ -95,14 +192,16 @@ abstract class Translator {
 
   Future<List<Map<String, String>?>> _translateBlocksInSequence(
       List<List<MapEntry<String, String>>> blocks,
-      IntlLocale locale,
-      String language,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
       bool confirm) async {
     final allResults = <Map<String, String>?>[];
 
     for (var blk in blocks) {
-      var result =
-          await translateBlock(Map.fromEntries(blk), locale, language, confirm);
+      var result = await translateBlock(Map.fromEntries(blk), fromLocale,
+          toLocale, fromLanguage, toLanguage, confirm);
 
       allResults.add(result);
     }
@@ -142,5 +241,31 @@ abstract class Translator {
   /// Translates an entries block.
   /// Called by [translate].
   FutureOr<Map<String, String>?> translateBlock(
-      Map<String, String> entries, IntlLocale locale, String language, confirm);
+      Map<String, String> entries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      confirm);
+}
+
+/// Base class for a [Translator] cache.
+abstract class TranslatorCache {
+  final TranslatorLogger? logger;
+
+  TranslatorCache({this.logger});
+
+  /// Logs [o] calling [logger].
+  void log(Object o) {
+    var logger = this.logger;
+    if (logger != null) {
+      logger(o);
+    }
+  }
+
+  FutureOr<String?> get(
+      String key, String message, IntlLocale fromLocale, IntlLocale toLocale);
+
+  FutureOr<bool> store(String key, String message, String translatedMessage,
+      IntlLocale fromLocale, IntlLocale toLocale);
 }

@@ -1,0 +1,8 @@
+
+tags:
+  # Versioning test
+  version:
+    timeout: 30s
+  # Slow tests:
+  slow:
+    timeout: 120s

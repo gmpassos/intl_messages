@@ -6,14 +6,20 @@ import 'translator.dart';
 
 /// Console translator.
 class TranslatorConsole extends Translator {
-  TranslatorConsole({super.logger}) : super(translateBlocksInParallel: false);
+  TranslatorConsole({super.logger, super.cache})
+      : super(translateBlocksInParallel: false);
 
   @override
   int get maxBlockLength => 999999;
 
   @override
-  Future<Map<String, String>?> translateBlock(Map<String, String> entries,
-      IntlLocale locale, String language, confirm) async {
+  Future<Map<String, String>?> translateBlock(
+      Map<String, String> entries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      confirm) async {
     stdout.write(
         '-------------------------------------------------------------\n');
 
@@ -21,8 +27,8 @@ class TranslatorConsole extends Translator {
 
     for (var e in entries.entries) {
       var k = e.key;
-      var m = await promptTranslation(k, e.value, locale,
-          confirm: confirm, language: language);
+      var m = await promptTranslation(k, e.value, fromLocale, toLocale,
+          fromLanguage: fromLanguage, toLanguage: toLanguage, confirm: confirm);
 
       entriesTranslated[k] = m;
       log('Translated> $k: $m');
@@ -33,15 +39,22 @@ class TranslatorConsole extends Translator {
 
   /// Console translation prompt.
   Future<String> promptTranslation(
-      String key, String message, IntlLocale locale,
-      {bool confirm = true, String? language}) async {
-    language ??= resolveLocaleName(locale);
+    String key,
+    String message,
+    IntlLocale fromLocale,
+    IntlLocale toLocale, {
+    String? fromLanguage,
+    String? toLanguage,
+    bool confirm = true,
+  }) async {
+    fromLanguage ??= resolveLocaleName(fromLocale);
+    toLanguage ??= resolveLocaleName(toLocale);
 
     message = message.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     while (true) {
       stdout.write(
-          'TRANSLATE THE MESSAGE[$key] TO `${locale.code}` ($language):\n\n');
+          'TRANSLATE THE MESSAGE[$key] FROM `${fromLocale.code}` ($fromLanguage) TO `${toLocale.code}` ($toLanguage):\n\n');
 
       stdout.write('$message\n\n');
 
@@ -54,7 +67,8 @@ class TranslatorConsole extends Translator {
         return line;
       }
 
-      var ok = confirmTranslation(key, line, locale, language: language);
+      var ok = confirmTranslation(key, line, fromLocale, toLocale,
+          fromLanguage: fromLanguage, toLanguage: toLanguage);
 
       if (ok) {
         return line;
@@ -63,11 +77,14 @@ class TranslatorConsole extends Translator {
   }
 
   /// Console translation confirmation.
-  bool confirmTranslation(String key, String message, IntlLocale locale,
-      {String? language}) {
-    language ??= resolveLocaleName(locale);
+  bool confirmTranslation(
+      String key, String message, IntlLocale fromLocale, IntlLocale toLocale,
+      {String? fromLanguage, String? toLanguage}) {
+    fromLanguage ??= resolveLocaleName(fromLocale);
+    toLanguage ??= resolveLocaleName(toLocale);
 
-    stdout.write('\nCONFIRM TRANSLATION FOR `${locale.code}` ($language):\n\n');
+    stdout.write(
+        '\nCONFIRM TRANSLATION FROM `${fromLocale.code}` ($fromLanguage) TO `${toLocale.code}` ($toLanguage):\n\n');
 
     stdout.write('`$message`\n\n');
 

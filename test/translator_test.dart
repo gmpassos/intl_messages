@@ -10,6 +10,9 @@ void main() {
 
       var t = _MyTranslator(logger: (o) => log.add(o), maxBlockLength: 18);
 
+      var fromLocale = IntlLocale('en');
+      var toLocale = IntlLocale('de');
+
       var results = await t.translate({
         'a': 'aaa',
         'b': 'bbb',
@@ -21,7 +24,7 @@ void main() {
         'h': 'hhh',
         'i': 'iii',
         'j': 'jjj',
-      }, IntlLocale('en'));
+      }, fromLocale, toLocale);
 
       expect(
           results,
@@ -57,6 +60,9 @@ void main() {
           translateBlocksInParallel: true,
           maxParallelTranslations: 2);
 
+      var fromLocale = IntlLocale('en');
+      var toLocale = IntlLocale('de');
+
       var results = await t.translate({
         'a': 'aaa',
         'b': 'bbb',
@@ -68,7 +74,7 @@ void main() {
         'h': 'hhh',
         'i': 'iii',
         'j': 'jjj',
-      }, IntlLocale('en'));
+      }, fromLocale, toLocale);
 
       expect(
           results,
@@ -111,8 +117,13 @@ class _MyTranslator extends Translator {
   final List<List<String>> blocksKeys = [];
 
   @override
-  FutureOr<Map<String, String>?> translateBlock(Map<String, String> entries,
-      IntlLocale locale, String language, confirm) {
+  FutureOr<Map<String, String>?> translateBlock(
+      Map<String, String> entries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      confirm) {
     blocksKeys.add(entries.keys.toList());
     return entries
         .map((key, value) => MapEntry(key, value.toUpperCase().trim()));

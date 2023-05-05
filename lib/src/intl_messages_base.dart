@@ -234,7 +234,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.1.4';
+  static const String VERSION = '2.1.5';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();

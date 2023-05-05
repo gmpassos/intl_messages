@@ -8,6 +8,7 @@ import 'package:intl_messages/intl_messages.dart';
 import 'package:intl_messages/src/intl_messages_tools.dart';
 import 'package:intl_messages/src/intl_messages_tools_io.dart';
 import 'package:intl_messages/src/translator_console.dart';
+import 'package:intl_messages/src/translator_io.dart';
 import 'package:intl_messages/src/translator_openai.dart';
 import 'package:path/path.dart' as pack_path;
 
@@ -123,6 +124,7 @@ class FixCommand extends Command<bool> {
     );
     argParser.addOption('api-key', help: 'The translator API-Key.');
     argParser.addFlag('confirm', help: 'Confirm translation.');
+    argParser.addOption('cache', help: 'Translator cache directory.');
     argParser.addFlag('overwrite',
         help: 'Overwrite `file` with the fixed version.');
   }
@@ -143,6 +145,13 @@ class FixCommand extends Command<bool> {
   String? get argTranslator => argResults?['translator'];
 
   String? get argApiKey => argResults?['api-key'];
+
+  Directory? get argCache {
+    var cacheDir = argResults?['cache'] as String?;
+    cacheDir = cacheDir?.trim();
+    if (cacheDir == null || cacheDir.isEmpty) return null;
+    return Directory(cacheDir).absolute;
+  }
 
   bool get argConfirm => argResults?['confirm'] ?? false;
 
@@ -165,8 +174,12 @@ class FixCommand extends Command<bool> {
     List<IntlRawEntry?>? refEntries;
     List<String>? missingKeys;
     List<String>? extraKeys;
+    IntlLocale? refLocale;
 
     if (argRef != null) {
+      var refName = pack_path.basename(argRef.path);
+      refLocale = IntlLocale.path(refName);
+
       refEntries = checkIntlFile(argRef, fileType: 'REF');
       if (refEntries == null) return false;
 
@@ -177,14 +190,18 @@ class FixCommand extends Command<bool> {
         extraKeys = errorKeys[1];
       }
     }
+
     if (missingKeys == null && extraKeys == null) {
       _consolePrinter('** File OK: ${argFile.path}');
       return true;
     }
 
     if (missingKeys != null && refEntries != null) {
+      assert(refLocale != null);
+
       var fileName = pack_path.basename(argFile.path);
       var fileLocale = IntlLocale.path(fileName);
+
       var language = allLocales()[fileLocale.code];
       if (language == null) {
         throw StateError(
@@ -206,8 +223,8 @@ class FixCommand extends Command<bool> {
 
       var confirm = argConfirm;
 
-      var translations =
-          await translator.translate(missingMap, fileLocale, confirm: confirm);
+      var translations = await translator
+          .translate(missingMap, refLocale!, fileLocale, confirm: confirm);
 
       if (translations != null) {
         var translatorConsole = TranslatorConsole();
@@ -224,12 +241,13 @@ class FixCommand extends Command<bool> {
             var m = e.msg;
             if (m == null || m.isEmpty) continue;
 
-            var ok = translatorConsole.confirmTranslation(k, m, fileLocale);
+            var ok = translatorConsole.confirmTranslation(
+                k, m, refLocale, fileLocale);
 
             if (!ok) {
               var m0 = missingMap[k] ?? m;
-              var m2 =
-                  await translatorConsole.promptTranslation(k, m0, fileLocale);
+              var m2 = await translatorConsole.promptTranslation(
+                  k, m0, refLocale, fileLocale);
               translatedEntries[i] = IntlRawEntry(k, m2);
             }
           }
@@ -264,10 +282,22 @@ class FixCommand extends Command<bool> {
   }
 
   Translator resolveTranslator(IntlLocale locale) {
+    var cacheDir = argCache;
+
+    TranslatorCache? translatorCache;
+    if (cacheDir != null) {
+      if (!cacheDir.existsSync()) {
+        throw StateError(
+            'Invalid `Translator` cache directory: ${cacheDir.path}');
+      }
+
+      translatorCache = TranslatorCacheDirectory(cacheDir);
+    }
+
     var argTranslator = this.argTranslator;
 
     if (argTranslator == 'console') {
-      return TranslatorConsole(logger: _translatorLog);
+      return TranslatorConsole(logger: _translatorLog, cache: translatorCache);
     } else if (argTranslator == 'openai') {
       var apiKey = argApiKey?.trim();
 
@@ -282,7 +312,8 @@ class FixCommand extends Command<bool> {
         throw ArgumentError("OpenAI requires an `api-key` parameter.");
       }
 
-      return TranslatorOpenAI(apiKey: apiKey, logger: _translatorLog);
+      return TranslatorOpenAI(
+          apiKey: apiKey, logger: _translatorLog, cache: translatorCache);
     } else {
       throw ArgumentError("Can't handle translator: `$argTranslator`");
     }

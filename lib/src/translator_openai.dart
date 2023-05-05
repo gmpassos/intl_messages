@@ -29,16 +29,22 @@ class TranslatorOpenAI extends Translator {
       this.model = 'gpt-3.5-turbo',
       this.maxBlockLength = 500,
       this.role = OpenAIChatMessageRole.user,
-      int maxParallelTranslations = 3,
-      super.logger})
+      int maxParallelTranslations = 2,
+      super.logger,
+      super.cache})
       : super(
             translateBlocksInParallel: true,
             maxParallelTranslations:
                 math.max(1, math.min(maxParallelTranslations, 10)));
 
   @override
-  Future<Map<String, String>?> translateBlock(Map<String, String> entries,
-      IntlLocale locale, String language, confirm) async {
+  Future<Map<String, String>?> translateBlock(
+      Map<String, String> entries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      confirm) async {
     var blk = entries.entries.map((e) {
       var k = e.key.trim();
       var m = e.value.replaceAll(RegExp(r'\s+'), ' ').trim();
@@ -53,17 +59,95 @@ class TranslatorOpenAI extends Translator {
       }
     }
 
-    var prompt =
-        //'Translate to $language the text on each line preserving the text before "=" and translating the text after "=" keeping the same format:\n\n'
-        'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:\n\n'
-        'key=message\n'
-        '$blk\n';
+    var prompt1 = _buildPrompt1(toLanguage, blk);
 
-    var content = await this.prompt(prompt);
+    var content = await prompt(prompt1);
     if (content == null || content.isEmpty) return null;
 
-    return parseResult(entries, content);
+    var translation1 = parseResult(entries, content);
+
+    var invalidKeys1 = validateTranslation(entries, translation1, 1);
+    if (invalidKeys1 == null) {
+      return translation1;
+    }
+
+    var prompt2 = _buildPrompt2(toLanguage, blk);
+
+    var content2 = await prompt(prompt2);
+    if (content2 == null || content2.isEmpty) return null;
+
+    var translation2 = parseResult(entries, content2);
+
+    var invalidKeys2 = validateTranslation(entries, translation2, 2);
+
+    if (invalidKeys2 != null) {
+      var translation1Valids = {...translation1};
+      var translation2Valids = {...translation2};
+
+      translation1Valids.removeWhere((key, _) => invalidKeys1.contains(key));
+
+      translation2Valids.removeWhere((key, _) => invalidKeys2.contains(key));
+      translation2Valids
+          .removeWhere((key, _) => translation1Valids.containsKey(key));
+
+      var translation3 = {...translation1Valids, ...translation2Valids};
+
+      log('FIXED TRANSLATION[3]>');
+      for (var e in translation3.entries) {
+        log('  -- ${e.key}: ${e.value}');
+      }
+
+      var invalidKeys3 = validateTranslation(entries, translation3, 3);
+      if (invalidKeys3 != null) {
+        for (var k in invalidKeys3) {
+          var m = translation1[k] ?? translation2[k];
+          if (m != null) {
+            translation3[k] = m;
+
+            log('** NOT TRANSLATED KEY> $k: $m');
+          }
+        }
+
+        log('RETURNING PARTIAL TRANSLATION> Not translated keys: $invalidKeys3');
+      }
+
+      return translation3;
+    } else {
+      return translation2;
+    }
   }
+
+  List<String>? validateTranslation(
+      Map<String, String> entries, Map<String, String> translation, int id) {
+    var notTranslated = entries.entries.where((e) {
+      var k = e.key;
+      var m = entries[k]?.trim().toLowerCase();
+      var t = translation[k]?.trim().toLowerCase();
+
+      if (t == null || t.isEmpty) {
+        if (m != null && m.isNotEmpty) return false;
+      }
+      return m == t;
+    }).toList();
+
+    if (notTranslated.isNotEmpty) {
+      log('NOT TRANSLATED[$id] KEYS> <${notTranslated.map((e) => '${e.key}: ${e.value}').join('> <')}>');
+
+      var invalidKeys = notTranslated.map((e) => e.key).toList();
+      return invalidKeys;
+    }
+
+    return null;
+  }
+
+  String _buildPrompt2(String language, String blk) {
+    return 'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:\n\n'
+        'key=message\n'
+        '$blk\n';
+  }
+
+  String _buildPrompt1(String language, String blk) =>
+      'Translate the texts on each line after "=" into $language keeping the same format:\n\n$blk\n';
 
   /// Prompts OpenAI API (using ChatGPT).
   Map<String, String> parseResult(Map<String, String> entries, String content) {
@@ -158,7 +242,7 @@ class TranslatorOpenAI extends Translator {
     var content = responses.first.trim();
     if (content.isEmpty) return null;
 
-    log('OPEN-AI RESPONSE>\n$content');
+    log('\nOPEN-AI RESPONSE>\n$content\n');
 
     return content;
   }

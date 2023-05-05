@@ -99,6 +99,8 @@ const Map<String, String> _allLocales = {
   'de_BE': 'German (Belgium)',
   'de_LU': 'German (Luxembourg)',
   'de_LI': 'German (Liechtenstein)',
+  'lb': 'Luxembourgish',
+  'lb_LU': 'Luxembourgish (Luxembourg)',
   'it': 'Italian',
   'it_IT': 'Italian (Italy)',
   'it_CH': 'Italian (Switzerland)',
