@@ -140,14 +140,14 @@ class TranslatorOpenAI extends Translator {
     return null;
   }
 
+  String _buildPrompt1(String language, String blk) =>
+      'Translate the texts on each line after "=" into $language keeping the same format:\n\n$blk\n';
+
   String _buildPrompt2(String language, String blk) {
     return 'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:\n\n'
         'key=message\n'
         '$blk\n';
   }
-
-  String _buildPrompt1(String language, String blk) =>
-      'Translate the texts on each line after "=" into $language keeping the same format:\n\n$blk\n';
 
   /// Prompts OpenAI API (using ChatGPT).
   Map<String, String> parseResult(Map<String, String> entries, String content) {
