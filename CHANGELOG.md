@@ -1,3 +1,8 @@
+## 2.1.5
+
+- Added `TranslatorCache`.
+- Added locale: `lb_LU`.
+
 ## 2.1.4
 
 - `TranslatorOpenAI`:
