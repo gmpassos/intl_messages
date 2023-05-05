@@ -9,7 +9,7 @@ import 'translator.dart';
 class TranslatorCacheDirectory extends TranslatorCache {
   final Directory directory;
 
-  TranslatorCacheDirectory(this.directory) {
+  TranslatorCacheDirectory(this.directory, {super.logger}) {
     if (!directory.existsSync()) {
       throw StateError(
           "Invalid `TranslatorCache` directory: ${directory.path}");
@@ -22,9 +22,9 @@ class TranslatorCacheDirectory extends TranslatorCache {
   }
 
   File _cacheFile(IntlLocale fromLocale, IntlLocale toLocale, String key) {
-    key = _normalizeKey(key);
+    var fileName = '${_normalizeKey(key)}.json';
     var dir = _cacheDirectory(fromLocale, toLocale);
-    return File(pack_path.join(dir.path, key));
+    return File(pack_path.join(dir.path, fileName));
   }
 
   String _normalizeKey(String key) => key.replaceAll(RegExp(r'\W'), '_');
@@ -40,7 +40,7 @@ class TranslatorCacheDirectory extends TranslatorCache {
     var j = file.readAsStringSync();
     var o = json.decode(j);
 
-    if (o != Map) {
+    if (o is! Map) {
       return null;
     }
 
@@ -50,7 +50,7 @@ class TranslatorCacheDirectory extends TranslatorCache {
       return null;
     }
 
-    var to = o['from'] as String?;
+    var to = o['to'] as String?;
     if (to != toLocale.code) {
       log('[ERROR] Invalid `to` code (`$to` != `${toLocale.code}`) at file: ${file.path}');
       return null;
@@ -70,6 +70,11 @@ class TranslatorCacheDirectory extends TranslatorCache {
   bool store(String key, String message, String translatedMessage,
       IntlLocale fromLocale, IntlLocale toLocale) {
     var file = _cacheFile(fromLocale, toLocale, key);
+
+    var dir = file.parent;
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
 
     var o = {
       'from': fromLocale.code,

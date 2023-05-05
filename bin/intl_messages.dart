@@ -291,7 +291,8 @@ class FixCommand extends Command<bool> {
             'Invalid `Translator` cache directory: ${cacheDir.path}');
       }
 
-      translatorCache = TranslatorCacheDirectory(cacheDir);
+      translatorCache =
+          TranslatorCacheDirectory(cacheDir, logger: _translatorLog);
     }
 
     var argTranslator = this.argTranslator;

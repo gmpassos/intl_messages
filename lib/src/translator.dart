@@ -35,7 +35,7 @@ abstract class Translator {
   /// Resolves [locale] to the language name.
   String resolveLocaleName(IntlLocale locale) => getLocaleName(locale.code);
 
-  /// Returns the cached translations for [entries].
+  /// Returns the cached translations for [entries] (if [cache] is provided).
   FutureOr<Map<String, String>?> getCachedEntries(
     Map<String, String> entries,
     IntlLocale fromLocale,
@@ -59,6 +59,28 @@ abstract class Translator {
 
       return mapCached;
     });
+  }
+
+  /// Cache translated [entries] (if [cache] is provided).
+  FutureOr<List<bool>?> cacheEntries(
+    Map<String, String> entries,
+    Map<String, String> translations,
+    IntlLocale fromLocale,
+    IntlLocale toLocale,
+  ) {
+    var cache = this.cache;
+    if (cache == null) return null;
+
+    var results = entries.entries.map((e) {
+      var k = e.key;
+      var m = entries[k];
+      if (m == null || m.trim().isEmpty) return false;
+      var t = translations[k];
+      if (t == null || t.trim().isEmpty) return false;
+      return cache.store(k, m, t, fromLocale, toLocale);
+    }).resolveAll();
+
+    return results;
   }
 
   /// Translates [entries] to [locale].
@@ -97,9 +119,9 @@ abstract class Translator {
       String toLanguage,
       bool confirm) {
     var entriesToRequest = Map<String, String>.from(entries);
-    Map<String, String>? cachedTranslation;
 
-    if (cachedEntries != null && cachedEntries.length >= entries.length) {
+    Map<String, String>? cachedTranslation;
+    if (cachedEntries != null && cachedEntries.isNotEmpty) {
       var cachedTranslationEntries = entries.entries
           .map((e) {
             var k = e.key;
@@ -159,8 +181,8 @@ abstract class Translator {
       String toLanguage,
       bool confirm) {
     var results = blocks
-        .map((blk) => translateBlock(Map.fromEntries(blk), fromLocale, toLocale,
-            fromLanguage, toLanguage, confirm))
+        .map((blk) => _translateBlockAndCache(
+            blk, fromLocale, toLocale, fromLanguage, toLanguage, confirm))
         .resolveAll();
     return results;
   }
@@ -180,8 +202,8 @@ abstract class Translator {
 
     for (var blocks in split) {
       var results = await blocks
-          .map((blk) => translateBlock(Map.fromEntries(blk), fromLocale,
-              toLocale, fromLanguage, toLanguage, confirm))
+          .map((blk) => _translateBlockAndCache(
+              blk, fromLocale, toLocale, fromLanguage, toLanguage, confirm))
           .resolveAll();
 
       allResults.addAll(results);
@@ -200,13 +222,32 @@ abstract class Translator {
     final allResults = <Map<String, String>?>[];
 
     for (var blk in blocks) {
-      var result = await translateBlock(Map.fromEntries(blk), fromLocale,
-          toLocale, fromLanguage, toLanguage, confirm);
+      var result = await _translateBlockAndCache(
+          blk, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
 
       allResults.add(result);
     }
 
     return allResults;
+  }
+
+  FutureOr<Map<String, String>?> _translateBlockAndCache(
+      List<MapEntry<String, String>> block,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      bool confirm) {
+    final blockEntries = Map.fromEntries(block);
+
+    return translateBlock(blockEntries, fromLocale, toLocale, fromLanguage,
+            toLanguage, confirm)
+        .then((translations) {
+      if (translations != null && translations.isNotEmpty) {
+        cacheEntries(blockEntries, translations, fromLocale, toLocale);
+      }
+      return translations;
+    });
   }
 
   /// Returns the maximum length of a block.
