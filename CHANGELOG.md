@@ -2,6 +2,9 @@
 
 - Added `TranslatorCache`.
 - Added locale: `lb_LU`.
+- dart_openai: ^1.9.8
+- yaml: ^3.1.2
+- args: ^2.4.1
 
 ## 2.1.4
 

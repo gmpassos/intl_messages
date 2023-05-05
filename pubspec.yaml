@@ -15,11 +15,11 @@ dependencies:
   enum_to_string: ^2.0.1
   swiss_knife: ^3.1.5
   async_extension: ^1.1.0
-  yaml: ^3.1.1
-  args: ^2.4.0
+  yaml: ^3.1.2
+  args: ^2.4.1
   path: ^1.8.3
   collection: ^1.17.1
-  dart_openai: ^1.9.6
+  dart_openai: ^1.9.8
 
 dev_dependencies:
   lints: ^2.0.1
