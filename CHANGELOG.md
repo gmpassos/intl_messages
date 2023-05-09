@@ -1,3 +1,8 @@
+## 2.1.6
+
+- `Translator`:
+  - Fix `_translateEntries` for when `results` is empty.
+
 ## 2.1.5
 
 - Added `TranslatorCache`.

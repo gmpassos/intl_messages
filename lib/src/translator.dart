@@ -162,8 +162,11 @@ abstract class Translator {
     }
 
     return results.resolveMapped((results) {
-      var allResults =
-          results.whereNotNull().reduce((map, e) => map..addAll(e));
+      var resultsNotNull = results.whereNotNull().toList();
+
+      var allResults = resultsNotNull.isNotEmpty
+          ? resultsNotNull.reduce((map, e) => map..addAll(e))
+          : <String, String>{};
 
       if (cachedTranslation != null) {
         allResults.addAll(cachedTranslation);
