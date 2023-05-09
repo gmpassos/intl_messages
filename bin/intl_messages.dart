@@ -196,7 +196,7 @@ class FixCommand extends Command<bool> {
       return true;
     }
 
-    if (missingKeys != null && refEntries != null) {
+    if (missingKeys != null && refEntries != null && missingKeys.isNotEmpty) {
       assert(refLocale != null);
 
       var fileName = pack_path.basename(argFile.path);

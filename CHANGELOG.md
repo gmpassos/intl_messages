@@ -2,6 +2,8 @@
 
 - `Translator`:
   - Fix `_translateEntries` for when `results` is empty.
+- `bin/intl_messages.dart`:
+  - Check if `missingKeys` is not empty.
 
 ## 2.1.5
 
