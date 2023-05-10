@@ -66,10 +66,10 @@ class TranslatorCacheDirectory extends TranslatorCache {
     var translation = o['translation'] as String?;
 
     var translationSourceNorm = _normalizeMessage(translationSource);
-    var translationNorm = _normalizeMessage(translation);
+    var messageNorm = _normalizeMessage(message);
 
-    if (translationSourceNorm != translationNorm) {
-      log('[WARNING] Not matching `message` at file: ${file.path}\n<$translationSourceNorm> != <$translationNorm>');
+    if (translationSourceNorm != messageNorm) {
+      log('[WARNING] Not matching `message` at file: ${file.path}\n<$translationSourceNorm> != <$messageNorm>');
       return null;
     }
 

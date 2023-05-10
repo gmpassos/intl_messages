@@ -1,3 +1,7 @@
+## 2.1.8
+
+- Fix `TranslatorCacheDirectory`.
+
 ## 2.1.7
 
 - `TranslatorCacheDirectory`:
