@@ -62,8 +62,24 @@ class TranslatorCacheDirectory extends TranslatorCache {
       return null;
     }
 
+    var translationSource = o['message'] as String?;
     var translation = o['translation'] as String?;
+
+    var translationSourceNorm = _normalizeMessage(translationSource);
+    var translationNorm = _normalizeMessage(translation);
+
+    if (translationSourceNorm != translationNorm) {
+      log('[WARNING] Not matching `message` at file: ${file.path}\n<$translationSourceNorm> != <$translationNorm>');
+      return null;
+    }
+
     return translation;
+  }
+
+  static String? _normalizeMessage(String? s) {
+    if (s == null) return null;
+    s = s.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+    return s;
   }
 
   @override

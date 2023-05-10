@@ -1,3 +1,8 @@
+## 2.1.7
+
+- `TranslatorCacheDirectory`:
+  - `get`: ensure that the cached `message` matches the parameter `message` to return a cached `translation`.
+
 ## 2.1.6
 
 - `Translator`:
