@@ -4,7 +4,7 @@ version: 2.1.9
 homepage: https://github.com/gmpassos/intl_messages
 
 environment:
-  sdk: '>=2.18.0 <3.0.0'
+  sdk: '>=2.18.0 <4.0.0'
 
 executables:
   intl_messages:
