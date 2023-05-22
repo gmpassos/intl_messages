@@ -1,3 +1,7 @@
+## 2.1.9
+
+- dart_openai: ^1.9.91
+
 ## 2.1.8
 
 - Fix `TranslatorCacheDirectory`.

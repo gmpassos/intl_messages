@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:async_extension/async_extension.dart';
 import 'package:collection/collection.dart';
-import 'package:dart_openai/openai.dart';
+import 'package:dart_openai/dart_openai.dart';
 
 import 'intl_messages_base.dart';
 import 'translator.dart';
