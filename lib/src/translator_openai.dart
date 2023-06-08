@@ -157,17 +157,41 @@ class TranslatorOpenAI extends Translator {
         .where((l) => l.isNotEmpty)
         .toList();
 
-    var entries2 = lines.map((l) {
-      var idx = l.indexOf('=');
-      if (idx < 0) {
-        idx = l.indexOf(':');
-      }
-      if (idx < 0) return null;
+    var entries2 = lines
+        .map((l) {
+          var idx = l.indexOf('=');
+          if (idx < 0) {
+            idx = l.indexOf(':');
+          }
+          if (idx < 0) return null;
 
-      var k = l.substring(0, idx);
-      var m = l.substring(idx + 1);
-      return MapEntry(k, m);
-    }).whereNotNull();
+          var k = l.substring(0, idx);
+          var m = l.substring(idx + 1);
+          return MapEntry(k, m);
+        })
+        .whereNotNull()
+        .toList();
+
+    if (entries2.every((e) => e.key == 'key' || e.key == 'translation')) {
+      var entries3 = <MapEntry<String, String>>[];
+
+      for (var i = 0; i < entries2.length; i += 2) {
+        var e1 = entries2[i];
+        var e2 = entries2[i + 1];
+
+        if (e1.key == 'translation' && e2.key == 'key') {
+          var tmp = e1;
+          e1 = e2;
+          e2 = tmp;
+        }
+
+        if (e1.key == 'key' && e2.key == 'translation') {
+          entries3.add(MapEntry(e1.value, e2.value));
+        }
+      }
+
+      entries2 = entries3;
+    }
 
     var map = Map<String, String>.fromEntries(entries2);
 

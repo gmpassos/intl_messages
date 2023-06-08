@@ -1,3 +1,8 @@
+## 2.1.10
+
+- `TranslatorOpenAI`:
+  - `parseResult`: improve parsing detecting results in `key=...` and `translation=...` lines.
+
 ## 2.1.9
 
 - dart_openai: ^1.9.91
