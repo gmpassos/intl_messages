@@ -19,7 +19,7 @@ class TranslatorConsole extends Translator {
       IntlLocale toLocale,
       String fromLanguage,
       String toLanguage,
-      confirm) async {
+      bool confirm) async {
     stdout.write(
         '-------------------------------------------------------------\n');
 

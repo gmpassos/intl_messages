@@ -44,7 +44,7 @@ class TranslatorOpenAI extends Translator {
       IntlLocale toLocale,
       String fromLanguage,
       String toLanguage,
-      confirm) async {
+      bool confirm) async {
     var blk = entries.entries.map((e) {
       var k = e.key.trim();
       var m = e.value.replaceAll(RegExp(r'\s+'), ' ').trim();

@@ -207,7 +207,7 @@ class _MyTranslator extends Translator {
       IntlLocale toLocale,
       String fromLanguage,
       String toLanguage,
-      confirm) {
+      bool confirm) {
     blocksKeys.add(entries.keys.toList());
     return entries
         .map((key, value) => MapEntry(key, value.toUpperCase().trim()));

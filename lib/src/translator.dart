@@ -145,6 +145,8 @@ abstract class Translator {
 
     var blocks = splitBlocks(allEntries);
 
+    if (blocks.isEmpty) return {};
+
     FutureOr<List<Map<String, String>?>> results;
 
     if (translateBlocksInParallel && maxParallelTranslations != 1) {
@@ -156,6 +158,9 @@ abstract class Translator {
         results = _translateBlocksParallelLimited(blocks, fromLocale, toLocale,
             fromLanguage, toLanguage, confirm, maxParallelTranslations);
       }
+    } else if (blocks.length == 1) {
+      return _translateBlockAndCache(blocks.first, fromLocale, toLocale,
+          fromLanguage, toLanguage, confirm);
     } else {
       results = _translateBlocksInSequence(
           blocks, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
@@ -290,7 +295,7 @@ abstract class Translator {
       IntlLocale toLocale,
       String fromLanguage,
       String toLanguage,
-      confirm);
+      bool confirm);
 }
 
 /// Base class for a [Translator] cache.
@@ -312,4 +317,73 @@ abstract class TranslatorCache {
 
   FutureOr<bool> store(String key, String message, String translatedMessage,
       IntlLocale fromLocale, IntlLocale toLocale);
+}
+
+/// A Translator with a inn-memory set of translations.
+/// - Useful for unit tests.
+class TranslatorInMemory extends Translator {
+  TranslatorInMemory({super.logger});
+
+  @override
+  int get maxBlockLength => 999999;
+
+  @override
+  FutureOr<Map<String, String>?> translateBlock(
+      Map<String, String> entries,
+      IntlLocale fromLocale,
+      IntlLocale toLocale,
+      String fromLanguage,
+      String toLanguage,
+      bool confirm) {
+    var translation = entries.map((key, msg) =>
+        MapEntry(key, translateEntry(fromLocale, toLocale, key, msg)));
+    return translation;
+  }
+
+  final Map<String, Map<String, Map<String, String>>> _translations = {};
+
+  /// Clears the in-memory set of translations.
+  void clearTranslations() => _translations.clear();
+
+  /// Adds a translation to the in-memory set.
+  void addTranslation(
+      IntlLocale fromLocale, IntlLocale toLocale, String key, String message) {
+    var from = _translations[fromLocale.code] ??= {};
+    var to = from[toLocale.code] ??= {};
+    to[key] = message;
+  }
+
+  /// Add all entries in [translations] to the in-memory set.
+  /// See [addTranslation].
+  void addTranslations(IntlLocale fromLocale, IntlLocale toLocale,
+      Map<String, String> translations) {
+    for (var e in translations.entries) {
+      addTranslation(fromLocale, toLocale, e.key, e.value);
+    }
+  }
+
+  /// Adds all translations in [translations] [Map].
+  /// See [addTranslations];
+  void addAllTranslations(
+      Map<IntlLocale, Map<IntlLocale, Map<String, String>>> translations) {
+    for (var fromEntry in translations.entries) {
+      final fromLocale = fromEntry.key;
+
+      for (var toEntry in fromEntry.value.entries) {
+        final toLocale = toEntry.key;
+
+        addTranslations(fromLocale, toLocale, toEntry.value);
+      }
+    }
+  }
+
+  String translateEntry(
+      IntlLocale fromLocale, IntlLocale toLocale, String key, String message) {
+    var from = _translations[fromLocale.code] ??= {};
+    var to = from[toLocale.code] ??= {};
+
+    var t = to[key];
+
+    return t ??= message;
+  }
 }

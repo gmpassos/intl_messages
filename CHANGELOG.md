@@ -1,3 +1,7 @@
+## 2.1.11
+
+- Added `TranslatorInMemory`.
+
 ## 2.1.10
 
 - `TranslatorOpenAI`:
