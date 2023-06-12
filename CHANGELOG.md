@@ -1,3 +1,7 @@
+## 2.1.12
+
+- `TranslatorInMemory`: fix internal tree of translations.
+
 ## 2.1.11
 
 - Added `TranslatorInMemory`.

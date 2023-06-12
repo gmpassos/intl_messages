@@ -340,32 +340,40 @@ class TranslatorInMemory extends Translator {
     return translation;
   }
 
-  final Map<String, Map<String, Map<String, String>>> _translations = {};
+  final Map<String, Map<String, Map<String, Map<String, String>>>>
+      _translations = {};
 
   /// Clears the in-memory set of translations.
   void clearTranslations() => _translations.clear();
 
   /// Adds a translation to the in-memory set.
-  void addTranslation(
-      IntlLocale fromLocale, IntlLocale toLocale, String key, String message) {
+  void addTranslation(IntlLocale fromLocale, IntlLocale toLocale, String key,
+      String message, String translation) {
     var from = _translations[fromLocale.code] ??= {};
     var to = from[toLocale.code] ??= {};
-    to[key] = message;
+    var entries = to[key] ??= {};
+
+    entries[_simplifyMessage(message)] = translation;
   }
+
+  static String _simplifyMessage(String m) => m.toLowerCase().trim();
 
   /// Add all entries in [translations] to the in-memory set.
   /// See [addTranslation].
   void addTranslations(IntlLocale fromLocale, IntlLocale toLocale,
-      Map<String, String> translations) {
+      Map<String, Map<String, String>> translations) {
     for (var e in translations.entries) {
-      addTranslation(fromLocale, toLocale, e.key, e.value);
+      for (var t in e.value.entries) {
+        addTranslation(fromLocale, toLocale, e.key, t.key, t.value);
+      }
     }
   }
 
   /// Adds all translations in [translations] [Map].
   /// See [addTranslations];
   void addAllTranslations(
-      Map<IntlLocale, Map<IntlLocale, Map<String, String>>> translations) {
+      Map<IntlLocale, Map<IntlLocale, Map<String, Map<String, String>>>>
+          translations) {
     for (var fromEntry in translations.entries) {
       final fromLocale = fromEntry.key;
 
@@ -382,7 +390,11 @@ class TranslatorInMemory extends Translator {
     var from = _translations[fromLocale.code] ??= {};
     var to = from[toLocale.code] ??= {};
 
-    var t = to[key];
+    var entries = to[key] ??= {};
+
+    var m = _simplifyMessage(message);
+
+    var t = entries[m];
 
     return t ??= message;
   }

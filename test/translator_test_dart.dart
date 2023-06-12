@@ -16,22 +16,22 @@ void main() {
       translator.addAllTranslations({
         IntlLocale.code('pt'): {
           IntlLocale.code('en'): {
-            'hello': 'Hello!',
-            'howAreYou': 'How are you?',
+            'hello': {'Oi!': 'Hello!'},
+            'howAreYou': {'Como vai você?': 'How are you?'},
           },
         },
         IntlLocale.code('en'): {
           IntlLocale.code('pt'): {
-            'hello': 'Oi!',
-            'howAreYou': 'Como vai você?',
+            'hello': {'Hello!': 'Oi!'},
+            'howAreYou': {'How are you?': 'Como vai você?'},
           },
         },
       });
 
       expect(
           translator.translate({
-            'hello': 'hello',
-            'howAreYou': 'how are you',
+            'hello': 'Hello!',
+            'howAreYou': 'HOW are you?',
           }, IntlLocale.code('en'), IntlLocale.code('pt')),
           equals({
             'hello': 'Oi!',
@@ -40,8 +40,8 @@ void main() {
 
       expect(
           translator.translate({
-            'hello': 'oi',
-            'howAreYou': 'como vai vc?',
+            'hello': 'OI!',
+            'howAreYou': 'Como vai você?',
           }, IntlLocale.code('pt'), IntlLocale.code('en')),
           equals({
             'hello': 'Hello!',
