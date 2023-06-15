@@ -322,7 +322,10 @@ abstract class TranslatorCache {
 /// A Translator with a inn-memory set of translations.
 /// - Useful for unit tests.
 class TranslatorInMemory extends Translator {
-  TranslatorInMemory({super.logger});
+  /// Optional translation key normalizer.
+  String Function(String key)? keyNormalizer;
+
+  TranslatorInMemory({this.keyNormalizer, super.logger});
 
   @override
   int get maxBlockLength => 999999;
@@ -349,6 +352,8 @@ class TranslatorInMemory extends Translator {
   /// Adds a translation to the in-memory set.
   void addTranslation(IntlLocale fromLocale, IntlLocale toLocale, String key,
       String message, String translation) {
+    key = _normalizeKey(key);
+
     var from = _translations[fromLocale.code] ??= {};
     var to = from[toLocale.code] ??= {};
     var entries = to[key] ??= {};
@@ -357,6 +362,12 @@ class TranslatorInMemory extends Translator {
   }
 
   static String _simplifyMessage(String m) => m.toLowerCase().trim();
+
+  String _normalizeKey(String key) {
+    var keyNormalizer = this.keyNormalizer;
+    if (keyNormalizer == null) return key;
+    return keyNormalizer(key);
+  }
 
   /// Add all entries in [translations] to the in-memory set.
   /// See [addTranslation].
@@ -387,9 +398,10 @@ class TranslatorInMemory extends Translator {
 
   String translateEntry(
       IntlLocale fromLocale, IntlLocale toLocale, String key, String message) {
+    key = _normalizeKey(key);
+
     var from = _translations[fromLocale.code] ??= {};
     var to = from[toLocale.code] ??= {};
-
     var entries = to[key] ??= {};
 
     var m = _simplifyMessage(message);

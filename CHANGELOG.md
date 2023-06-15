@@ -1,3 +1,8 @@
+## 2.1.14
+
+- `TranslatorInMemory`:
+  - Added `keyNormalizer`.
+
 ## 2.1.13
 
 - `TranslatorOpenAI.parseResult`: improve parsing of translations with keys also translated.
