@@ -1,3 +1,10 @@
+## 2.1.13
+
+- `TranslatorOpenAI.parseResult`: improve parsing of translations with keys also translated.
+
+- args: ^2.4.2
+- dart_openai: ^2.0.1
+
 ## 2.1.12
 
 - `TranslatorInMemory`: fix internal tree of translations.

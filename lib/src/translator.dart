@@ -149,7 +149,10 @@ abstract class Translator {
 
     FutureOr<List<Map<String, String>?>> results;
 
-    if (translateBlocksInParallel && maxParallelTranslations != 1) {
+    if (blocks.length == 1) {
+      return _translateBlockAndCache(blocks.first, fromLocale, toLocale,
+          fromLanguage, toLanguage, confirm);
+    } else if (translateBlocksInParallel && maxParallelTranslations != 1) {
       if (maxParallelTranslations <= 0) {
         results = _translateBlocksParallel(
             blocks, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
@@ -158,9 +161,6 @@ abstract class Translator {
         results = _translateBlocksParallelLimited(blocks, fromLocale, toLocale,
             fromLanguage, toLanguage, confirm, maxParallelTranslations);
       }
-    } else if (blocks.length == 1) {
-      return _translateBlockAndCache(blocks.first, fromLocale, toLocale,
-          fromLanguage, toLanguage, confirm);
     } else {
       results = _translateBlocksInSequence(
           blocks, fromLocale, toLocale, fromLanguage, toLanguage, confirm);
