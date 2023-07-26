@@ -1,3 +1,8 @@
+## 2.1.15
+
+- resource_portable: ^3.1.0
+  - Fix path resolution on Windows.
+
 ## 2.1.14
 
 - `TranslatorInMemory`:
