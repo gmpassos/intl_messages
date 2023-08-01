@@ -1,3 +1,12 @@
+## 2.2.0
+
+- sdk: '>=3.0.0 <4.0.0'
+- async_extension: ^1.1.1
+- collection: ^1.18.0
+- dart_openai: ^4.0.0
+- lints: ^2.1.1
+- test: ^1.24.4
+
 ## 2.1.15
 
 - resource_portable: ^3.1.0
