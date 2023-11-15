@@ -234,7 +234,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.2.0';
+  static const String VERSION = '2.2.1';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -1876,19 +1876,19 @@ class MessageValue {
   }
 
   String build([Map<String, dynamic>? variables]) {
-    var built = '';
+    var built = StringBuffer();
 
     for (var e in _values) {
       if (e is MessageVariable) {
-        built += e.build(variables);
+        built.write(e.build(variables));
       } else if (e is MessageBlock) {
-        built += e.build(variables);
+        built.write(e.build(variables));
       } else {
-        built += e.toString();
+        built.write(e);
       }
     }
 
-    return built;
+    return built.toString();
   }
 }
 

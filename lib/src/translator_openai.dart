@@ -248,6 +248,8 @@ class TranslatorOpenAI extends Translator {
             ),
           ],
         );
+
+        break;
       } catch (e) {
         error = e;
 
