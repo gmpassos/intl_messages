@@ -1,3 +1,7 @@
+## 2.2.2
+
+- dart_openai: ^4.1.4
+
 ## 2.2.1
 
 - async_extension: ^1.2.5

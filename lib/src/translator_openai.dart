@@ -21,14 +21,10 @@ class TranslatorOpenAI extends Translator {
   /// Maximum retries for failed requests (HTTP Status 429).
   final int maxRetries = 3;
 
-  /// Message role.
-  final OpenAIChatMessageRole role;
-
   TranslatorOpenAI(
       {required this.apiKey,
       this.model = 'gpt-3.5-turbo',
       this.maxBlockLength = 500,
-      this.role = OpenAIChatMessageRole.user,
       int maxParallelTranslations = 2,
       super.logger,
       super.cache})
@@ -243,9 +239,12 @@ class TranslatorOpenAI extends Translator {
           n: n,
           messages: [
             OpenAIChatCompletionChoiceMessageModel(
-              role: role,
-              content: prompt,
-            ),
+                role: OpenAIChatMessageRole.user,
+                content: [
+                  OpenAIChatCompletionChoiceMessageContentItemModel.text(
+                    prompt,
+                  ),
+                ]),
           ],
         );
 
@@ -275,8 +274,10 @@ class TranslatorOpenAI extends Translator {
 
     if (responses.isEmpty) return null;
 
-    var content = responses.first.trim();
-    if (content.isEmpty) return null;
+    var contents = responses.first;
+
+    var content = contents?.map((e) => e.text).whereNotNull().join('\n').trim();
+    if (content == null || content.isEmpty) return null;
 
     log('\nOPEN-AI RESPONSE>\n$content\n');
 
