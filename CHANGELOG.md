@@ -1,3 +1,8 @@
+## 2.2.3
+
+- `Translator`:
+  - Small fix with cached entries.
+
 ## 2.2.2
 
 - dart_openai: ^4.1.4

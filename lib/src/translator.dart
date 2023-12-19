@@ -150,8 +150,9 @@ abstract class Translator {
     FutureOr<List<Map<String, String>?>> results;
 
     if (blocks.length == 1) {
-      return _translateBlockAndCache(blocks.first, fromLocale, toLocale,
-          fromLanguage, toLanguage, confirm);
+      results = _translateBlockAndCache(blocks.first, fromLocale, toLocale,
+              fromLanguage, toLanguage, confirm)
+          .resolveMapped((r) => [r]);
     } else if (translateBlocksInParallel && maxParallelTranslations != 1) {
       if (maxParallelTranslations <= 0) {
         results = _translateBlocksParallel(
