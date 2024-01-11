@@ -55,9 +55,9 @@ class TranslatorOpenAI extends Translator {
       }
     }
 
-    var prompt1 = _buildPrompt1(toLanguage, blk);
+    var (instruction: inst1, prompt: prompt1) = _buildPrompt1(toLanguage, blk);
 
-    var content = await prompt(prompt1);
+    var content = await prompt(prompt1, instruction: inst1);
     if (content == null || content.isEmpty) return null;
 
     var translation1 = parseResult(entries, content);
@@ -67,9 +67,9 @@ class TranslatorOpenAI extends Translator {
       return translation1;
     }
 
-    var prompt2 = _buildPrompt2(toLanguage, blk);
+    var (instruction: inst2, prompt: prompt2) = _buildPrompt2(toLanguage, blk);
 
-    var content2 = await prompt(prompt2);
+    var content2 = await prompt(prompt2, instruction: inst2);
     if (content2 == null || content2.isEmpty) return null;
 
     var translation2 = parseResult(entries, content2);
@@ -136,13 +136,22 @@ class TranslatorOpenAI extends Translator {
     return null;
   }
 
-  String _buildPrompt1(String language, String blk) =>
-      'Translate the texts on each line after "=" into $language keeping the same format:\n\n$blk\n';
+  ({String instruction, String prompt}) _buildPrompt1(
+          String language, String blk) =>
+      (
+        instruction:
+            'Translate the texts on each line after "=" into $language keeping the same format:',
+        prompt: blk
+      );
 
-  String _buildPrompt2(String language, String blk) {
-    return 'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:\n\n'
-        'key=message\n'
-        '$blk\n';
+  ({String instruction, String prompt}) _buildPrompt2(
+      String language, String blk) {
+    return (
+      instruction:
+          'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:',
+      prompt: 'key=message\n'
+          '$blk\n',
+    );
   }
 
   /// Prompts OpenAI API (using ChatGPT).
@@ -222,7 +231,7 @@ class TranslatorOpenAI extends Translator {
     return mapTranslated;
   }
 
-  Future<String?> prompt(String prompt, {int? n}) async {
+  Future<String?> prompt(String prompt, {String? instruction, int? n}) async {
     log('OPEN-AI PROMPT> $prompt');
 
     OpenAI.apiKey = apiKey;
@@ -232,22 +241,31 @@ class TranslatorOpenAI extends Translator {
 
     var maxRetries = math.max(1, this.maxRetries);
 
+    var messages = [
+      if (instruction != null && instruction.isNotEmpty)
+        OpenAIChatCompletionChoiceMessageModel(
+            role: OpenAIChatMessageRole.assistant,
+            content: [
+              OpenAIChatCompletionChoiceMessageContentItemModel.text(
+                instruction,
+              ),
+            ]),
+      OpenAIChatCompletionChoiceMessageModel(
+          role: OpenAIChatMessageRole.user,
+          content: [
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
+              prompt,
+            ),
+          ]),
+    ];
+
     for (var i = 0; i <= maxRetries; ++i) {
       try {
         chatCompletion = await OpenAI.instance.chat.create(
           model: model,
           n: n,
-          messages: [
-            OpenAIChatCompletionChoiceMessageModel(
-                role: OpenAIChatMessageRole.user,
-                content: [
-                  OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                    prompt,
-                  ),
-                ]),
-          ],
+          messages: messages,
         );
-
         break;
       } catch (e) {
         error = e;

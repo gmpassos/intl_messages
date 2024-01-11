@@ -1,3 +1,7 @@
+## 2.2.4
+
+- Improve openai translation instructions.
+
 ## 2.2.3
 
 - `Translator`:
