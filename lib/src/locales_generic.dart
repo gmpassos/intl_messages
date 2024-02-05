@@ -4,9 +4,7 @@ import 'locales.dart';
 
 /// Generic implementation of [LocalesManager].
 class LocalesManagerGeneric extends LocalesManager {
-  LocalesManagerGeneric(InitializeLocaleFunction initializeLocaleFunction,
-      [void Function(String locale)? onDefineLocale])
-      : super(initializeLocaleFunction, onDefineLocale);
+  LocalesManagerGeneric(super.initializeLocaleFunction, [super.onDefineLocale]);
 
   @override
   final bool isBrowserURI = false;

@@ -7,9 +7,7 @@ import 'locales.dart';
 
 /// Browser implementation of [LocalesManager].
 class LocalesManagerBrowser extends LocalesManager {
-  LocalesManagerBrowser(InitializeLocaleFunction initializeLocaleFunction,
-      [void Function(String locale)? onDefineLocale])
-      : super(initializeLocaleFunction, onDefineLocale);
+  LocalesManagerBrowser(super.initializeLocaleFunction, [super.onDefineLocale]);
 
   // ignore: non_constant_identifier_names
   final String _localKey_locales_preferredLocale = '__locales__preferredLocale';
