@@ -227,8 +227,68 @@ class TranslatorOpenAI extends Translator {
           .toList();
     }
 
-    var mapTranslated = Map<String, String>.fromEntries(entriesTranslated);
+    var entriesTranslated2 =
+        entriesTranslated.map((e) => _normalizeTranslationEntry(entries, e));
+
+    var mapTranslated = Map<String, String>.fromEntries(entriesTranslated2);
     return mapTranslated;
+  }
+
+  static final _regExpSpace = RegExp(r'\s+');
+
+  MapEntry<String, String> _normalizeTranslationEntry(
+      Map<String, String> entries, MapEntry<String, String> e) {
+    final k = e.key;
+    final v = e.value;
+
+    final v0 = entries[k];
+    if (v0 == null) return e;
+
+    String strLC(String s) =>
+        s.toLowerCase().replaceAll(_regExpSpace, ' ').trim();
+
+    String norm1(String v) {
+      final idx = v.indexOf('->');
+
+      if (idx > 0) {
+        var vLC = strLC(v);
+        var v0LC = strLC(v0);
+
+        if (vLC.startsWith('$v0LC ->')) {
+          var v2 = v.substring(idx + 2).trim();
+          if (v2.isNotEmpty) {
+            return v2;
+          }
+        }
+      }
+
+      return v;
+    }
+
+    String norm2(String v) {
+      final idx = v.indexOf('=');
+
+      if (idx > 0) {
+        var vLC = strLC(v);
+        var kLC = strLC(k);
+
+        if (vLC.startsWith('$kLC=')) {
+          var v2 = v.substring(kLC.length + 1).trim();
+          if (v2.isNotEmpty) {
+            return v2;
+          }
+        }
+      }
+
+      return v;
+    }
+
+    var vOK = v;
+
+    vOK = norm1(vOK);
+    vOK = norm2(vOK);
+
+    return vOK == v ? e : MapEntry(k, vOK);
   }
 
   Future<String?> prompt(String prompt, {String? instruction, int? n}) async {
