@@ -1,3 +1,11 @@
+## 2.2.5
+
+- `TranslatorOpenAI`:
+  - Improve `parseResult`.
+
+- lints: ^3.0.0
+- test: ^1.24.9
+
 ## 2.2.4
 
 - Improve openai translation instructions.
