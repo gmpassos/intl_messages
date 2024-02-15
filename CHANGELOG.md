@@ -1,3 +1,15 @@
+## 2.3.0
+
+- sdk: '>=3.3.0 <4.0.0'
+
+- swiss_knife: ^3.2.0
+- path: ^1.9.0
+- intl: ^0.19.0
+
+- test: ^1.25.2
+- dependency_validator: ^3.2.3
+- coverage: ^1.7.2
+
 ## 2.2.5
 
 - `TranslatorOpenAI`:
