@@ -253,7 +253,7 @@ final allCountries = {
       return CountryInfo(code.trim().toUpperCase(), name.trim(), dial);
     })
     .toList(growable: false)
-    .asUnmodifiableView;
+    .asUnmodifiableListView();
 
 final allCountriesByCode =
     allCountries.map((e) => MapEntry(e.code, e)).toMapFromEntries();
@@ -318,7 +318,7 @@ CountryInfo? getCountryInfo(
 }
 
 extension _ListExtension<T> on List<T> {
-  List<T> get asUnmodifiableView => UnmodifiableListView(this);
+  List<T> asUnmodifiableListView() => UnmodifiableListView(this);
 }
 
 extension _IterableMapEntryExtension<K, V> on Iterable<MapEntry<K, V>> {
