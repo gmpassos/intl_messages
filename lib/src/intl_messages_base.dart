@@ -1466,7 +1466,7 @@ class Message {
 
   String? get description => _description;
 
-  bool get hasDescription => _description != null && _description!.isNotEmpty;
+  bool get hasDescription => _description != null && _description.isNotEmpty;
 
   String build([Map<String, dynamic>? variables]) {
     return _value.build(variables);

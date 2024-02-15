@@ -41,7 +41,7 @@ class IntlResourceUri {
   ResourceContent? _cached(ResourceContent? resourceContent) {
     if (resourceContent == null) return null;
     if (_resourceContentCache != null) {
-      return _resourceContentCache!.get(resourceContent);
+      return _resourceContentCache.get(resourceContent);
     }
     return resourceContent;
   }
