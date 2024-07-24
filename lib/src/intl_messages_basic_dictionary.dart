@@ -461,7 +461,6 @@ class IntlBasicDictionary {
       case 'os':
       case 'pa':
       case 'pi':
-      case 'pl':
       case 'ps':
       case 'qu':
       case 'rm':

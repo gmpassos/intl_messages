@@ -174,7 +174,7 @@ class TranslatorOpenAI extends Translator {
           var m = l.substring(idx + 1);
           return MapEntry(k, m);
         })
-        .whereNotNull()
+        .nonNulls
         .toList();
 
     if (entries2.every((e) => e.key == 'key' || e.key == 'translation')) {
@@ -217,7 +217,7 @@ class TranslatorOpenAI extends Translator {
 
           return null;
         })
-        .whereNotNull()
+        .nonNulls
         .toList();
 
     if (entriesTranslated.length < entries2.length &&
@@ -354,7 +354,7 @@ class TranslatorOpenAI extends Translator {
 
     var contents = responses.first;
 
-    var content = contents?.map((e) => e.text).whereNotNull().join('\n').trim();
+    var content = contents?.map((e) => e.text).nonNulls.join('\n').trim();
     if (content == null || content.isEmpty) return null;
 
     log('\nOPEN-AI RESPONSE>\n$content\n');
