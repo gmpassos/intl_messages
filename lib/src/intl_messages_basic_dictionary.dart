@@ -275,4 +275,255 @@ class IntlBasicDictionary {
 
     return m2;
   }
+
+  static String decimalDelimiter(
+      [IntlLocale? locale, IntlLocale? localeFallback]) {
+    locale ??= IntlLocale.getDefaultIntlLocale();
+    localeFallback ??= IntlLocale.code('en');
+
+    var delimiter = _decimalDelimiterImpl(locale) ??
+        _decimalDelimiterImpl(localeFallback) ??
+        '.';
+
+    return delimiter;
+  }
+
+  static String? _decimalDelimiterImpl(IntlLocale locale) {
+    final language = locale.language;
+    final region = locale.region;
+
+    switch (language) {
+      case 'en':
+        switch (region) {
+          case 'US':
+          case 'GB': // UK
+          case 'UK':
+          case 'CA':
+          case 'AU':
+          case 'NZ':
+          case 'IE':
+            return '.';
+          default:
+            return '.';
+        }
+      case 'es':
+        switch (region) {
+          case 'ES':
+          case 'MX':
+          case 'AR':
+          case 'CO':
+          case 'CL':
+            return ',';
+          default:
+            return ',';
+        }
+      case 'fr':
+        switch (region) {
+          case 'FR':
+          case 'CA':
+          case 'BE':
+          case 'CH':
+          case 'LU':
+            return ',';
+          default:
+            return ',';
+        }
+      case 'zh':
+        switch (region) {
+          case 'CN':
+          case 'SG':
+          case 'TW':
+          case 'HK':
+          case 'MO':
+            return '.';
+          default:
+            return '.';
+        }
+      case 'ja':
+        return '.';
+      case 'ko':
+        return '.';
+      case 'pt':
+      case 'it':
+      case 'de':
+      case 'ru':
+      case 'nl':
+      case 'sv':
+      case 'pl':
+      case 'tr':
+      case 'no':
+        return ',';
+      case 'ar':
+        return '٫'; // Arabic decimal separator (U+066B).
+      case 'he':
+      case 'th':
+      case 'vi':
+      case 'hi':
+      case 'jv':
+      case 'aa':
+      case 'ab':
+      case 'af':
+      case 'ak':
+      case 'am':
+      case 'an':
+      case 'as':
+      case 'av':
+      case 'ay':
+      case 'az':
+      case 'ba':
+      case 'be':
+      case 'bg':
+      case 'bi':
+      case 'bm':
+      case 'bn':
+      case 'bo':
+      case 'br':
+      case 'bs':
+      case 'ca':
+      case 'ce':
+      case 'ch':
+      case 'co':
+      case 'cr':
+      case 'cs':
+      case 'cu':
+      case 'cv':
+      case 'cy':
+      case 'da':
+      case 'dv':
+      case 'dz':
+      case 'ee':
+      case 'el':
+      case 'eo':
+      case 'et':
+      case 'eu':
+      case 'fa':
+      case 'ff':
+      case 'fi':
+      case 'fj':
+      case 'fo':
+      case 'fy':
+      case 'ga':
+      case 'gd':
+      case 'gl':
+      case 'gn':
+      case 'gu':
+      case 'gv':
+      case 'ha':
+      case 'ho':
+      case 'hr':
+      case 'ht':
+      case 'hu':
+      case 'hy':
+      case 'hz':
+      case 'ia':
+      case 'id':
+      case 'ie':
+      case 'ig':
+      case 'ii':
+      case 'ik':
+      case 'io':
+      case 'is':
+      case 'iu':
+      case 'ka':
+      case 'kg':
+      case 'ki':
+      case 'kj':
+      case 'kk':
+      case 'kl':
+      case 'km':
+      case 'kn':
+      case 'kr':
+      case 'ks':
+      case 'ku':
+      case 'kv':
+      case 'kw':
+      case 'ky':
+      case 'la':
+      case 'lb':
+      case 'lg':
+      case 'li':
+      case 'ln':
+      case 'lo':
+      case 'lt':
+      case 'lu':
+      case 'lv':
+      case 'mg':
+      case 'mh':
+      case 'mi':
+      case 'mk':
+      case 'ml':
+      case 'mn':
+      case 'mr':
+      case 'ms':
+      case 'mt':
+      case 'my':
+      case 'na':
+      case 'nb':
+      case 'nd':
+      case 'ne':
+      case 'ng':
+      case 'nn':
+      case 'nr':
+      case 'nv':
+      case 'ny':
+      case 'oc':
+      case 'oj':
+      case 'om':
+      case 'or':
+      case 'os':
+      case 'pa':
+      case 'pi':
+      case 'ps':
+      case 'qu':
+      case 'rm':
+      case 'rn':
+      case 'ro':
+      case 'rw':
+      case 'sa':
+      case 'sc':
+      case 'sd':
+      case 'se':
+      case 'sg':
+      case 'si':
+      case 'sk':
+      case 'sl':
+      case 'sm':
+      case 'sn':
+      case 'so':
+      case 'sq':
+      case 'sr':
+      case 'ss':
+      case 'st':
+      case 'su':
+      case 'sw':
+      case 'ta':
+      case 'te':
+      case 'tg':
+      case 'ti':
+      case 'tk':
+      case 'tl':
+      case 'tn':
+      case 'to':
+      case 'ts':
+      case 'tt':
+      case 'tw':
+      case 'ty':
+      case 'ug':
+      case 'uk':
+      case 'ur':
+      case 'uz':
+      case 've':
+      case 'vo':
+      case 'wa':
+      case 'wo':
+      case 'xh':
+      case 'yi':
+      case 'yo':
+      case 'za':
+      case 'zu':
+        return '.';
+      default:
+        return null;
+    }
+  }
 }

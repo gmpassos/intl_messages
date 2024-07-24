@@ -48,7 +48,7 @@ abstract class Translator {
       var k = e.key;
       var t = cache.get(k, e.value, fromLocale, toLocale);
       return t != null ? MapEntry(k, t) : null;
-    }).whereNotNull())
+    }).nonNulls)
         .resolveAllValues();
 
     return results.resolveMapped((map) {
@@ -128,7 +128,7 @@ abstract class Translator {
             var m = cachedEntries[k];
             return m != null && m.trim().isNotEmpty ? MapEntry(k, m) : null;
           })
-          .whereNotNull()
+          .nonNulls
           .toList();
 
       cachedTranslation = Map.fromEntries(cachedTranslationEntries);
@@ -168,7 +168,7 @@ abstract class Translator {
     }
 
     return results.resolveMapped((results) {
-      var resultsNotNull = results.whereNotNull().toList();
+      var resultsNotNull = results.nonNulls.toList();
 
       var allResults = resultsNotNull.isNotEmpty
           ? resultsNotNull.reduce((map, e) => map..addAll(e))

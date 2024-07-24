@@ -424,6 +424,62 @@ void main() {
     setUp(() {});
 
     test('msg', () {
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en')),
+          equals('.'));
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('es')),
+          equals(','));
+
+      expect(
+          IntlBasicDictionary.decimalDelimiter(
+              IntlLocale.code('xx'), IntlLocale.code('en')),
+          equals('.'));
+      expect(
+          IntlBasicDictionary.decimalDelimiter(
+              IntlLocale.code('xx'), IntlLocale.code('es')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_CA')),
+          equals('.'));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_CA')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('pt')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('it')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ru')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_UK')),
+          equals('.'));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_GB')),
+          equals('.'));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_AU')),
+          equals('.'));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_XX')),
+          equals('.'));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_XX')),
+          equals(','));
+
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('zh')),
+          equals('.'));
+
+      // Arabic decimal separator (U+066B):
+      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ar')),
+          equals('٫'));
+    });
+
+    test('msg', () {
       expect(IntlBasicDictionary.msg('help', IntlLocale.code('en')),
           equals('help'));
       expect(IntlBasicDictionary.msg('help', IntlLocale.code('pt')),

@@ -78,7 +78,7 @@ class IntlRawEntry {
 extension ListIntlRawEntryExtension on List<IntlRawEntry?> {
   /// Group entries by [IntlRawEntry.key].
   Map<String, List<IntlRawEntry>> groupByKey() {
-    var groupByKey = whereNotNull().groupListsBy((e) => e.key);
+    var groupByKey = nonNulls.groupListsBy((e) => e.key);
     return groupByKey;
   }
 
@@ -93,7 +93,7 @@ extension ListIntlRawEntryExtension on List<IntlRawEntry?> {
   /// - Key: [IntlRawEntry.key]
   /// - Value: [List] of [IntlRawEntry].
   Map<String, IntlRawEntry> toMap() => Map<String, IntlRawEntry>.fromEntries(
-      whereNotNull().map((e) => MapEntry(e.key, e)));
+      nonNulls.map((e) => MapEntry(e.key, e)));
 
   /// Converts this [List] of [IntlRawEntry] to a [String] with all the entries (`.intl` file format).
   FutureOr<String> toIntlFileContent(
