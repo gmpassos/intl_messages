@@ -1,3 +1,11 @@
+## 2.3.1
+
+- Added `IntlBasicDictionary.decimalDelimiter`.
+
+- async_extension: ^1.2.12
+- test: ^1.25.8
+- coverage: ^1.8.0
+
 ## 2.3.0
 
 - sdk: '>=3.3.0 <4.0.0'
