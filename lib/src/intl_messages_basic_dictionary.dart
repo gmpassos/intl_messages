@@ -328,6 +328,21 @@ class IntlBasicDictionary {
           default:
             return ',';
         }
+      case 'zh':
+        switch (region) {
+          case 'CN':
+          case 'SG':
+          case 'TW':
+          case 'HK':
+          case 'MO':
+            return '.';
+          default:
+            return '.';
+        }
+      case 'ja':
+        return '.';
+      case 'ko':
+        return '.';
       case 'pt':
       case 'it':
       case 'de':
@@ -340,9 +355,6 @@ class IntlBasicDictionary {
         return ',';
       case 'ar':
         return '٫'; // Arabic decimal separator (U+066B).
-      case 'zh':
-      case 'ja':
-      case 'ko':
       case 'he':
       case 'th':
       case 'vi':
