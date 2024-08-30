@@ -1,3 +1,13 @@
+## 2.3.2
+
+- `CountryInfo`:
+  - Added field `languages`
+  - Updated countries table with languages.
+
+- swiss_knife: ^3.2.1
+- args: ^2.5.0
+- coverage: ^1.9.1
+
 ## 2.3.1
 
 - Added `IntlBasicDictionary.decimalDelimiter`.

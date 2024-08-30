@@ -44,7 +44,7 @@ void main() {
       }
 
       {
-        var countryInfo = allCountriesByName['united states'];
+        var countryInfo = allCountriesByName['united states of america'];
         _expectCountryUS(countryInfo);
       }
     });
@@ -65,8 +65,17 @@ void main() {
 
         expect(getCountryInfo(countryCode: 'us'), equals(countryInfo));
         expect(getCountryInfo(dialCode: 1), equals(countryInfo));
-        expect(
-            getCountryInfo(countryName: 'United States'), equals(countryInfo));
+        expect(getCountryInfo(countryName: 'United States Of America'),
+            equals(countryInfo));
+      }
+
+      {
+        var countryInfo = getCountryInfo(countryCode: 'BE');
+        _expectCountryBE(countryInfo);
+
+        expect(getCountryInfo(countryCode: 'be'), equals(countryInfo));
+        expect(getCountryInfo(dialCode: 32), equals(countryInfo));
+        expect(getCountryInfo(countryName: 'belgium'), equals(countryInfo));
       }
     });
   });
@@ -76,10 +85,19 @@ void _expectCountryBR(CountryInfo? countryInfo) {
   expect(countryInfo!.code, equals('BR'));
   expect(countryInfo.dialCode, equals(55));
   expect(countryInfo.name, equals('Brazil'));
+  expect(countryInfo.languages, equals(['pt']));
 }
 
 void _expectCountryUS(CountryInfo? countryInfo) {
   expect(countryInfo!.code, equals('US'));
   expect(countryInfo.dialCode, equals(1));
-  expect(countryInfo.name, equals('United States'));
+  expect(countryInfo.name, equals('United States of America'));
+  expect(countryInfo.languages, equals(['en']));
+}
+
+void _expectCountryBE(CountryInfo? countryInfo) {
+  expect(countryInfo!.code, equals('BE'));
+  expect(countryInfo.dialCode, equals(32));
+  expect(countryInfo.name, equals('Belgium'));
+  expect(countryInfo.languages, equals(['nl', 'fr', 'de']));
 }
