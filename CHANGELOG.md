@@ -1,3 +1,14 @@
+## 2.3.3
+
+- `IntlLocale`:
+  - Set the locale code delimiter to: `RegExp(r'[_-]')`
+
+- `IntlMessages`:
+  - `isContentProperties`: accept comments using `#`.
+
+- swiss_knife: ^3.2.2
+- coverage: ^1.9.2
+
 ## 2.3.2
 
 - `CountryInfo`:

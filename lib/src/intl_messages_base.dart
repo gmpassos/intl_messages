@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:async_extension/async_extension.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:intl/intl.dart';
-import 'package:yaml/yaml.dart' as yaml;
 import 'package:resource_portable/resource.dart' show Resource;
 import 'package:swiss_knife/swiss_knife.dart';
+import 'package:yaml/yaml.dart' as yaml;
 
 import 'locales.dart';
 
@@ -234,7 +234,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.3.2';
+  static const String VERSION = '2.3.3';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -375,6 +375,13 @@ class IntlMessages {
   /// Identifies [content] with properties format.
   bool isContentProperties(String content) {
     content = content.trim();
+
+    content = content
+        .replaceAll('\r', '\n')
+        .replaceAll(RegExp(r'(?:^|\n)[ \t]*#[^\n]*'), '\n');
+
+    content = content.trim();
+
     return content.startsWith(RegExp(r'[\w.-]+=\S+'));
   }
 
@@ -1208,9 +1215,11 @@ class IntlLocale implements Comparable<IntlLocale> {
 
   late final String _region;
 
+  static final RegExp _codeDelimiter = RegExp(r'[_-]');
+
   /// Instantiate using a string locale code.
   IntlLocale.code(String localeCode) {
-    var split = localeCode.split('_');
+    var split = localeCode.split(_codeDelimiter);
 
     var lang = _normalizeLanguage(split[0]);
     var reg = _normalizeRegion(split.length > 1 ? split[1] : null);
@@ -1226,10 +1235,14 @@ class IntlLocale implements Comparable<IntlLocale> {
     if (locale is IntlLocale) return locale;
     if (locale is String) {
       var s = locale.trim();
-      if (s.length <= 6 && !s.contains('/') && !s.contains('.')) {
-        return IntlLocale.code(s);
-      } else {
-        return IntlLocale.path(s);
+      try {
+        if (s.length <= 6 && !s.contains('/') && !s.contains('.')) {
+          return IntlLocale.code(s);
+        } else {
+          return IntlLocale.path(s);
+        }
+      } catch (_) {
+        return null;
       }
     }
     return null;
@@ -1237,7 +1250,7 @@ class IntlLocale implements Comparable<IntlLocale> {
 
   /// Instantiate parsing a path and finding the locale code in it.
   factory IntlLocale.path(String path) {
-    var idx = path.lastIndexOf('_');
+    var idx = path.lastIndexOf(_codeDelimiter);
 
     if (idx >= 0) {
       if (idx < 2) throw ArgumentError("Can't find locale delimiter in path");
@@ -1312,7 +1325,10 @@ class IntlLocale implements Comparable<IntlLocale> {
   bool get hasRegion => _region.isNotEmpty;
 
   /// Full locale code, example: 'en_US', 'pt_BR'
-  String get code => hasRegion ? '${_language}_$_region' : _language;
+  String get code => buildCode();
+
+  String buildCode({String delimiter = '_'}) =>
+      hasRegion ? '$_language$delimiter$_region' : _language;
 
   @override
   bool operator ==(Object other) =>
