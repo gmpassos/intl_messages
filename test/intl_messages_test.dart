@@ -162,6 +162,50 @@ void main() {
     });
   });
 
+  group('IntlLocale', () {
+    test('IntlLocale.code', () async {
+      expect(IntlLocale.code('pt_BR').code, equals('pt_BR'));
+      expect(IntlLocale.code('pt-BR').code, equals('pt_BR'));
+
+      expect(IntlLocale.code('pt').code, equals('pt'));
+    });
+
+    test('IntlLocale.path', () async {
+      expect(IntlLocale.path('/web/i18n/msgs-pt.intl').code, equals('pt'));
+      expect(
+          IntlLocale.path('/web/i18n/msgs-pt_BR.intl').code, equals('pt_BR'));
+      expect(
+          IntlLocale.path('/web/i18n/msgs-pt-BR.intl').code, equals('pt_BR'));
+
+      expect(IntlLocale.path('/web/i18n/msgs.pt.intl').code, equals('pt'));
+      expect(
+          IntlLocale.path('/web/i18n/msgs.pt_BR.intl').code, equals('pt_BR'));
+      expect(
+          IntlLocale.path('/web/i18n/msgs.pt-BR.intl').code, equals('pt_BR'));
+
+      expect(() => IntlLocale.path('/web/i18n/msgs.pt').code,
+          throwsA(isArgumentError));
+      expect(() => IntlLocale.path('/web/i18n/msgs.pt_BR').code,
+          throwsA(isArgumentError));
+      expect(() => IntlLocale.path('/web/i18n/msgs.pt-BR').code,
+          throwsA(isArgumentError));
+      expect(IntlLocale.path('/web/i18n/msgs.pt.BR').code, equals('pt'));
+
+      expect(() => IntlLocale.path('/web/i18n/msgs.foo_bar.intl').code,
+          throwsA(isArgumentError));
+      expect(() => IntlLocale.path('/web/i18n/msgs.foo-bar.intl').code,
+          throwsA(isArgumentError));
+      expect(() => IntlLocale.path('/web/i18n/msgs.oo.intl').code,
+          throwsA(isArgumentError));
+      expect(() => IntlLocale.path('/web/i18n/msgs.foo.intl').code,
+          throwsA(isArgumentError));
+
+      expect(IntlLocale.path('/web/i18n/msgs,pt').code, equals('pt'));
+      expect(IntlLocale.path('/web/i18n/msgs,pt_BR').code, equals('pt_BR'));
+      expect(IntlLocale.path('/web/i18n/msgs,pt-BR').code, equals('pt_BR'));
+    });
+  });
+
   group('IntlMessages', () {
     LocalesManager? localesManager;
     String? testLocalesBaseUri;

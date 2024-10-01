@@ -234,7 +234,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.3.3';
+  static const String VERSION = '2.3.4';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -1248,35 +1248,88 @@ class IntlLocale implements Comparable<IntlLocale> {
     return null;
   }
 
+  static Map<String, String>? _knownLocales;
+
+  /// Returns `true` if the locale parameters [language] and [region] are known.
+  static bool isKnownLocale(String? language, [String? region]) {
+    if (language == null) return false;
+
+    language = language.toLowerCase();
+
+    var knownLocales = _knownLocales ??= allLocales();
+
+    if (!knownLocales.containsKey(language)) {
+      return false;
+    }
+
+    if (region != null) {
+      region = region.toUpperCase();
+      if (!knownLocales.containsKey('${language}_$region')) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  static final RegExp _regexpNonCode = RegExp(r'[^a-zA-Z]');
+  static final RegExp _regexpCode = RegExp(r'^[a-zA-Z]{2,3}$');
+
   /// Instantiate parsing a path and finding the locale code in it.
   factory IntlLocale.path(String path) {
+    path = path.trim();
+
+    var idxExtension = path.lastIndexOf('.');
+
+    if (idxExtension >= 0) {
+      path = path.substring(0, idxExtension);
+    }
+
     var idx = path.lastIndexOf(_codeDelimiter);
 
     if (idx >= 0) {
-      if (idx < 2) throw ArgumentError("Can't find locale delimiter in path");
+      var pre = path.substring(0, idx).trim();
+      var pos = path.substring(idx + 1).trim();
 
-      var lang = path.substring(idx - 2, idx);
-      var reg = path.substring(idx + 1);
-
-      if (reg.length > 3) reg = reg.substring(0, 3);
-      if (reg.length == 3 &&
-          !RegExp(r'[a-zA-Z]').hasMatch(reg.substring(2, 3))) {
-        reg = reg.substring(0, 2);
+      if (!_regexpCode.hasMatch(pos)) {
+        throw ArgumentError("Can't find locale part on end of path.");
       }
 
-      return IntlLocale.langReg(lang, reg);
+      var idx2 = pre.lastIndexOf(_regexpNonCode);
+      if (idx2 >= 0) {
+        pre = pre.substring(idx2 + 1);
+      }
+
+      if (pre.length == 2) {
+        var localeExists = isKnownLocale(pre, pos);
+        if (localeExists) {
+          return IntlLocale.langReg(pre, pos);
+        }
+      } else if (pos.length == 2) {
+        var localeExists = isKnownLocale(pos);
+        if (localeExists) {
+          return IntlLocale.langReg(pos);
+        }
+      }
+
+      throw ArgumentError("Can't find locale part in path");
     }
 
-    idx = path.lastIndexOf('.');
+    idx = path.lastIndexOf(_regexpNonCode);
 
-    if (idx > 2) {
-      var lang = path.substring(idx - 2, idx);
+    if (idx >= 0) {
+      var pos = path.substring(idx + 1).trim();
 
-      if (!RegExp(r'[a-zA-Z]').hasMatch(lang)) {
-        throw ArgumentError("Can't find locale part with only language on it.");
+      if (!_regexpCode.hasMatch(pos)) {
+        throw ArgumentError("Can't find locale part on end of path.");
       }
 
-      return IntlLocale(lang);
+      if (pos.length == 2) {
+        var localeExists = isKnownLocale(pos);
+        if (localeExists) {
+          return IntlLocale.langReg(pos);
+        }
+      }
     }
 
     throw ArgumentError("Can't find locale part in path");

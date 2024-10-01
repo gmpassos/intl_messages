@@ -1,3 +1,9 @@
+## 2.3.4
+
+- `IntlLocale`:
+  - Added `isKnownLocale`.
+  - Fix constructor `IntlLocale.path` for different delimiters.
+
 ## 2.3.3
 
 - `IntlLocale`:
