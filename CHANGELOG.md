@@ -3,6 +3,7 @@
 - `IntlLocale`:
   - Added `isKnownLocale`.
   - Fix constructor `IntlLocale.path` for different delimiters.
+  - Avoid bug: https://github.com/dart-lang/sdk/issues/56834
 
 ## 2.3.3
 
