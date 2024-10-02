@@ -1171,7 +1171,7 @@ abstract class _IntlDefaultLocale {
 
   static final EventStream<String?> onDefineLocale = EventStream();
 
-  static void _setLocale(dynamic locale) {
+  static void _setLocale(Object? locale) {
     if (locale == null) return;
 
     var intlLocale = IntlLocale(locale);
@@ -1216,6 +1216,9 @@ class IntlLocale implements Comparable<IntlLocale> {
   late final String _region;
 
   static final RegExp _codeDelimiter = RegExp(r'[_-]');
+
+  // Avoid bug: https://github.com/dart-lang/sdk/issues/56834
+  static final RegExp _codeDelimiter2 = RegExp(r'[_-]');
 
   /// Instantiate using a string locale code.
   IntlLocale.code(String localeCode) {
@@ -1285,7 +1288,7 @@ class IntlLocale implements Comparable<IntlLocale> {
       path = path.substring(0, idxExtension);
     }
 
-    var idx = path.lastIndexOf(_codeDelimiter);
+    var idx = path.lastIndexOf(_codeDelimiter2);
 
     if (idx >= 0) {
       var pre = path.substring(0, idx).trim();
@@ -1343,7 +1346,7 @@ class IntlLocale implements Comparable<IntlLocale> {
   }
 
   /// Dynamic parsing and instantiation.
-  factory IntlLocale(dynamic locale) {
+  factory IntlLocale(Object? locale) {
     if (locale == null) return IntlLocale.getDefaultIntlLocale();
 
     if (locale is IntlLocale) {
