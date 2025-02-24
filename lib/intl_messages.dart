@@ -1,4 +1,5 @@
-library intl_messages;
+/// Internationalized Messages Library.
+library;
 
 export 'src/countries.dart';
 export 'src/intl_messages_base.dart';

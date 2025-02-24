@@ -1,5 +1,6 @@
 @TestOn('vm')
 @Tags(['version'])
+library;
 
 import 'dart:io';
 

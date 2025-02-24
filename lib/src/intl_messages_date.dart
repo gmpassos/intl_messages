@@ -34,8 +34,6 @@ String? getDateRangeTypeTitle(DateRangeType rangeType,
       return IntlBasicDictionary.msg('last month', locale, localeFallback);
     case DateRangeType.thisMonth:
       return IntlBasicDictionary.msg('this month', locale, localeFallback);
-    default:
-      throw UnsupportedError("Can't handle: $rangeType");
   }
 }
 

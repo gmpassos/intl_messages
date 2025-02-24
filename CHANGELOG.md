@@ -1,3 +1,15 @@
+## 2.3.5
+
+- swiss_knife: ^3.2.3
+- async_extension: ^1.2.14
+- yaml: ^3.1.3
+- args: ^2.6.0
+- path: ^1.9.1
+
+- lints: ^5.1.1
+- test: ^1.25.15
+- coverage: ^1.11.1
+
 ## 2.3.4
 
 - `IntlLocale`:

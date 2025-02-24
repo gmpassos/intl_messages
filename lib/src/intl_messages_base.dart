@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:async_extension/async_extension.dart';
-import 'package:enum_to_string/enum_to_string.dart';
+import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:resource_portable/resource.dart' show Resource;
 import 'package:swiss_knife/swiss_knife.dart';
@@ -234,7 +234,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '2.3.4';
+  static const String VERSION = '2.3.5';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -1685,18 +1685,20 @@ class MessageBlockBranch {
     var idx3 = typeStr.indexOf(']');
 
     if (idx2 > 0 && idx3 > idx2) {
-      var type = typeStr.substring(0, idx2).toUpperCase().trim();
+      var type = typeStr.substring(0, idx2).toLowerCase().trim();
       var varName = typeStr.substring(idx2 + 1, idx3).trim();
 
       return MessageBlockBranch._(
-          EnumToString.fromString(MessageBlockBranchType.values, type) ??
+          MessageBlockBranchType.values.firstWhereOrNull(
+                  (e) => equalsIgnoreAsciiCase(e.name, type)) ??
               MessageBlockBranchType.defaultBranch,
           varName,
           MessageValue(value));
     } else {
-      typeStr = typeStr.toUpperCase();
+      typeStr = typeStr.toLowerCase();
       return MessageBlockBranch._(
-          EnumToString.fromString(MessageBlockBranchType.values, typeStr) ??
+          MessageBlockBranchType.values.firstWhereOrNull(
+                  (e) => equalsIgnoreAsciiCase(e.name, typeStr)) ??
               MessageBlockBranchType.defaultBranch,
           null,
           MessageValue(value));
@@ -1720,8 +1722,6 @@ class MessageBlockBranch {
       case MessageBlockBranchType.other:
         return matchesOther(variables);
       case MessageBlockBranchType.defaultBranch:
-        return false;
-      default:
         return false;
     }
   }
