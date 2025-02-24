@@ -1,3 +1,10 @@
+## 3.0.0-beta.1
+
+- sdk: '>=3.6.0 <4.0.0'
+
+- resource_portable: ^3.1.2
+- collection: ^1.19.0
+
 ## 2.3.5
 
 - swiss_knife: ^3.2.3
