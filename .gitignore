@@ -16,4 +16,4 @@ coverage/
 test/.test_coverage.dart
 coverage_badge.svg
 
- .DS_Store
+.DS_Store
