@@ -9,4 +9,4 @@ tags:
 
 platforms: [vm, chrome]
 
-compilers: [source, exe, dart2js, dart2wasm]
+compilers: [source, dart2js, dart2wasm]
