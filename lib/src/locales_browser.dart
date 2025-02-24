@@ -1,8 +1,8 @@
-// ignore: deprecated_member_use
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:intl/intl.dart';
 import 'package:intl/intl_browser.dart';
+import 'package:web/web.dart' as web;
 
 import 'locales.dart';
 
@@ -24,12 +24,12 @@ class LocalesManagerBrowser extends LocalesManager {
 
   @override
   String? readPreferredLocale() {
-    return window.localStorage[_localKey_locales_preferredLocale];
+    return web.window.localStorage[_localKey_locales_preferredLocale];
   }
 
   @override
   void storePreferredLocale(String locale) {
-    window.localStorage[_localKey_locales_preferredLocale] = locale;
+    web.window.localStorage[_localKey_locales_preferredLocale] = locale;
   }
 
   @override
@@ -41,14 +41,15 @@ class LocalesManagerBrowser extends LocalesManager {
   dynamic buildLanguageSelector(Function() refreshOnChange) {
     var localeOptions = getLocaleOptions();
 
-    var selectElement = SelectElement();
+    var selectElement = web.HTMLSelectElement();
 
     for (var localeOption in localeOptions) {
-      var opt = OptionElement(
-          value: localeOption.locale,
-          data: localeOption.name!,
-          selected: localeOption.selected!);
-      selectElement.children.add(opt);
+      var opt = web.HTMLOptionElement()
+        ..value = localeOption.locale
+        ..text = localeOption.name!
+        ..selected = localeOption.selected!;
+
+      selectElement.appendChild(opt);
     }
 
     var initializeAllLocales = this.initializeAllLocales();
@@ -58,8 +59,9 @@ class LocalesManagerBrowser extends LocalesManager {
     });
 
     selectElement.onChange.listen((e) {
-      var locale = selectElement.selectedOptions[0].value;
-      print('selected language: $locale');
+      var opt = selectElement.selectedOptions.item(0) as web.HTMLOptionElement?;
+      var locale = opt?.value ?? '';
+      print('-- Selected language: $locale');
       setPreferredLocale(locale);
       refreshOnChange();
     });
@@ -85,12 +87,12 @@ List<String> getPossibleLocalesSequenceInBrowser(String locale) {
   }
 
   print(
-      'window.navigator.language: ${window.navigator.language} ; ${window.navigator.languages} ');
+      '-- window.navigator.language: ${web.window.navigator.language} ; ${web.window.navigator.languages} ');
 
-  for (var l in window.navigator.languages!) {
-    l = Intl.canonicalizedLocale(l);
-    if (!possibleLocalesSequence.contains(l)) {
-      possibleLocalesSequence.add(l);
+  for (var l in web.window.navigator.languages.toDart) {
+    var s = Intl.canonicalizedLocale(l.toDart);
+    if (!possibleLocalesSequence.contains(s)) {
+      possibleLocalesSequence.add(s);
     }
   }
 
@@ -100,7 +102,7 @@ List<String> getPossibleLocalesSequenceInBrowser(String locale) {
     }
   }
 
-  print('possibleLocalesSequence[browser]: $possibleLocalesSequence');
+  print('-- possibleLocalesSequence[browser]: $possibleLocalesSequence');
 
   return possibleLocalesSequence;
 }
