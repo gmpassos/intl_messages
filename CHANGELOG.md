@@ -1,9 +1,14 @@
 ## 3.0.0-beta.1
 
+- Change from `dart:html` (deprecated) to package `web`.
+
 - sdk: '>=3.6.0 <4.0.0'
 
+- swiss_knife: ^3.3.0
+- intl: ^0.20.2
 - resource_portable: ^3.1.2
 - collection: ^1.19.0
+- web: ^1.1.0
 
 ## 2.3.5
 
