@@ -1,3 +1,12 @@
+## 2.3.6
+
+- sdk: '>=3.6.0 <4.0.0'
+
+- swiss_knife: ^3.3.0
+- intl: ^0.20.2
+- resource_portable: ^3.1.2
+- collection: ^1.19.0
+
 ## 2.3.5
 
 - swiss_knife: ^3.2.3
