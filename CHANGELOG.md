@@ -1,3 +1,12 @@
+## 2.3.7
+
+- swiss_knife: ^3.3.3
+- async_extension: ^1.2.15
+- args: ^2.7.0
+
+- test: ^1.26.3
+- coverage: ^1.15.0
+
 ## 2.3.6
 
 - sdk: '>=3.6.0 <4.0.0'
