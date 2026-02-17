@@ -1,3 +1,19 @@
+## 3.0.0
+
+- Release v3.0.0
+
+- `LocalesManagerBrowser`:
+  - Fixed `readPreferredLocale` to use `localStorage.getItem` instead of direct index access.
+  - Fixed `storePreferredLocale` to use `localStorage.setItem` instead of direct index assignment.
+
+- Dependency updates in `pubspec.yaml`:
+  - Updated `swiss_knife` from ^3.3.0 to ^3.3.5.
+  - Updated `async_extension` from ^1.2.14 to ^1.2.21.
+  - Updated `args` from ^2.6.0 to ^2.7.0.
+  - Updated `web` from ^1.1.0 to ^1.1.1.
+  - Updated `test` from ^1.25.15 to ^1.29.0.
+  - Updated `coverage` from ^1.11.1 to ^1.15.0.
+
 ## 3.0.0-beta.1
 
 - Change from `dart:html` (deprecated) to package `web`.

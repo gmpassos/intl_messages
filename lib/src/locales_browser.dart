@@ -24,12 +24,12 @@ class LocalesManagerBrowser extends LocalesManager {
 
   @override
   String? readPreferredLocale() {
-    return web.window.localStorage[_localKey_locales_preferredLocale];
+    return web.window.localStorage.getItem(_localKey_locales_preferredLocale);
   }
 
   @override
   void storePreferredLocale(String locale) {
-    web.window.localStorage[_localKey_locales_preferredLocale] = locale;
+    web.window.localStorage.setItem(_localKey_locales_preferredLocale, locale);
   }
 
   @override
