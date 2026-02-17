@@ -10,7 +10,8 @@ import 'package:intl/src/intl_helpers.dart';
 import 'package:swiss_knife/swiss_knife.dart';
 
 import 'intl_messages_base.dart';
-import 'locales_generic.dart' if (dart.library.html) 'locales_browser.dart';
+import 'locales_generic.dart'
+    if (dart.library.js_interop) 'locales_browser.dart';
 
 const List<String> _latinLanguages = [
   'en',

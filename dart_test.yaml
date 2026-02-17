@@ -6,3 +6,7 @@ tags:
   # Slow tests:
   slow:
     timeout: 120s
+
+platforms: [vm, chrome]
+
+compilers: [source, dart2js, dart2wasm]
