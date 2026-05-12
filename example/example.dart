@@ -11,8 +11,10 @@ void main() {
 }
 
 class App {
-  final IntlMessagesLoader intlMessagesLoader =
-      IntlMessagesLoader('example', 'example/i18n/msgs-');
+  final IntlMessagesLoader intlMessagesLoader = IntlMessagesLoader(
+    'example',
+    'example/i18n/msgs-',
+  );
 
   IntlMessages get messages => intlMessagesLoader.intlMessages;
 

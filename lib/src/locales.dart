@@ -503,7 +503,7 @@ const Map<String, String> _allLocales = {
   'yo_NG': 'Yoruba (Nigeria)',
   'yo': 'Yoruba',
   'zu_ZA': 'Zulu (South Africa)',
-  'zu': 'Zulu'
+  'zu': 'Zulu',
 };
 
 /// List of locales for latin languages.
@@ -522,11 +522,13 @@ List<String> allLocalesCodes() {
 }
 
 /// Returns the name of a locale code.
-String getLocaleName(String locale,
-    {String? defaultName,
-    bool nativeName = false,
-    String? nativeLocale,
-    bool preserveLatinNames = true}) {
+String getLocaleName(
+  String locale, {
+  String? defaultName,
+  bool nativeName = false,
+  String? nativeLocale,
+  bool preserveLatinNames = true,
+}) {
   locale = Intl.canonicalizedLocale(locale);
   var localeShort = Intl.shortLocale(locale);
 
@@ -584,8 +586,9 @@ class IntlMessageLookup implements MessageLookup {
     var init = localesManager.isInitializedLocale(locale);
     if (init) return true;
 
-    var toLookup =
-        localesManager.languagesToLookup.any((l) => l.code == locale);
+    var toLookup = localesManager.languagesToLookup.any(
+      (l) => l.code == locale,
+    );
     return toLookup;
   }
 
@@ -595,9 +598,14 @@ class IntlMessageLookup implements MessageLookup {
   }
 
   @override
-  String? lookupMessage(String? messageText, String? locale, String? name,
-      List<Object>? args, String? meaning,
-      {MessageIfAbsent? ifAbsent}) {
+  String? lookupMessage(
+    String? messageText,
+    String? locale,
+    String? name,
+    List<Object>? args,
+    String? meaning, {
+    MessageIfAbsent? ifAbsent,
+  }) {
     if (name == null) return messageText;
 
     for (var e in IntlMessages.instances.values) {
@@ -626,7 +634,10 @@ class LocaleInitializer {
   late Completer<bool> _completer;
 
   LocaleInitializer(
-      this.localesManager, this.initializeFunction, this._locales) {
+    this.localesManager,
+    this.initializeFunction,
+    this._locales,
+  ) {
     _completer = Completer();
 
     if (messageLookup is UninitializedLocaleData) {
@@ -705,8 +716,9 @@ class LocaleInitializer {
 }
 
 LocalesManager createLocalesManager(
-    InitializeLocaleFunction initializeLocaleFunction,
-    [void Function(String locale)? onDefineLocale]) {
+  InitializeLocaleFunction initializeLocaleFunction, [
+  void Function(String locale)? onDefineLocale,
+]) {
   return createLocalesManagerImpl(initializeLocaleFunction, onDefineLocale);
 }
 
@@ -749,8 +761,10 @@ abstract class LocalesManager {
 
   final Map<String, bool> _initializedLocales = {};
 
-  LocalesManager(this.initializeLocaleFunction,
-      [OnDefineLocale? onDefineLocale]) {
+  LocalesManager(
+    this.initializeLocaleFunction, [
+    OnDefineLocale? onDefineLocale,
+  ]) {
     if (onDefineLocale != null) {
       this.onDefineLocale.listen(onDefineLocale);
     }
@@ -792,8 +806,9 @@ abstract class LocalesManager {
     if (includeFails) {
       locales.removeWhere((l) => _initializedLocales.containsKey(l));
     } else {
-      locales.removeWhere((l) =>
-          isInitializedLocale(l) || isInitializedLocaleWithAlternative(l));
+      locales.removeWhere(
+        (l) => isInitializedLocale(l) || isInitializedLocaleWithAlternative(l),
+      );
     }
 
     return locales;
@@ -863,7 +878,8 @@ abstract class LocalesManager {
 
       if (alternative != null) {
         print(
-            'Locale already initialized with alternative: $locale -> $alternative');
+          'Locale already initialized with alternative: $locale -> $alternative',
+        );
         _defineInitializedLocale(alternative);
         return Future.value(true);
       } else {
@@ -875,7 +891,10 @@ abstract class LocalesManager {
     var possibleLocalesSequence = getLocalesSequence(locale);
 
     var localeInitializer = LocaleInitializer(
-        this, (s) => _callInitializeLocale(s, true), possibleLocalesSequence);
+      this,
+      (s) => _callInitializeLocale(s, true),
+      possibleLocalesSequence,
+    );
 
     localeInitializer.onFailLocale.listen((l) {
       _initializedLocales[l] = false;
@@ -897,7 +916,8 @@ abstract class LocalesManager {
         _onLocaleInitialized(locale);
       } else {
         print(
-            '** Failed to initialize locales> failedLocales: ${localeInitializer.failedLocales}');
+          '** Failed to initialize locales> failedLocales: ${localeInitializer.failedLocales}',
+        );
       }
 
       return ok;
@@ -908,7 +928,8 @@ abstract class LocalesManager {
     _initializedLocales[locale] = true;
 
     print(
-        'Initialized locales: ${getInitializedLocales()} ; alternatives: ${getInitializedLocalesAlternatives()}');
+      'Initialized locales: ${getInitializedLocales()} ; alternatives: ${getInitializedLocalesAlternatives()}',
+    );
 
     _defineInitializedLocale(locale);
   }
@@ -963,12 +984,15 @@ abstract class LocalesManager {
     var options = <LocaleOption>[];
 
     for (var l in initializedLocales) {
-      var localeName = getLocaleName(l,
-          defaultName: l,
-          nativeName: true,
-          nativeLocale: '*',
-          preserveLatinNames: true);
-      var sel = (l == currentLocale) ||
+      var localeName = getLocaleName(
+        l,
+        defaultName: l,
+        nativeName: true,
+        nativeLocale: '*',
+        preserveLatinNames: true,
+      );
+      var sel =
+          (l == currentLocale) ||
           (!currentLocaleInitialized && l == currentLocaleShort);
 
       var opt = LocaleOption(l, sel, localeName);
@@ -1018,12 +1042,16 @@ abstract class LocalesManager {
 
         initializations[l] = ok ? 1 : 2;
 
-        var completed =
-            initializations.values.where((v) => v == 0).toList().isEmpty;
+        var completed = initializations.values
+            .where((v) => v == 0)
+            .toList()
+            .isEmpty;
 
         if (completed) {
-          var anyInit =
-              initializations.values.where((v) => v == 1).toList().isNotEmpty;
+          var anyInit = initializations.values
+              .where((v) => v == 1)
+              .toList()
+              .isNotEmpty;
 
           _onInitializeAllLocales();
 
@@ -1046,8 +1074,9 @@ abstract class LocalesManager {
       if (!lOk) {
         var similarLocales = getSimilarLocales(l);
 
-        var alternatives =
-            similarLocales.where((l) => _initializedLocales[l]!).toList();
+        var alternatives = similarLocales
+            .where((l) => _initializedLocales[l]!)
+            .toList();
 
         if (alternatives.isNotEmpty) {
           _localesAlternatives[l] = alternatives[0];

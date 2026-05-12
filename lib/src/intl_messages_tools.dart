@@ -5,12 +5,15 @@ import 'package:collection/collection.dart';
 
 /// A message line in a `.intl` file.
 class IntlRawEntry {
-  static List<IntlRawEntry?>? fromLines(List<String>? lines,
-      {bool strict = false}) {
+  static List<IntlRawEntry?>? fromLines(
+    List<String>? lines, {
+    bool strict = false,
+  }) {
     if (lines == null) return null;
 
-    var entries =
-        lines.map((l) => IntlRawEntry.parse(l, strict: strict)).toList();
+    var entries = lines
+        .map((l) => IntlRawEntry.parse(l, strict: strict))
+        .toList();
 
     return entries;
   }
@@ -21,9 +24,7 @@ class IntlRawEntry {
   /// The translated message.
   final String? msg;
 
-  IntlRawEntry(String key, [String? msg])
-      : key = key.trim(),
-        msg = msg?.trim();
+  IntlRawEntry(String key, [String? msg]) : key = key.trim(), msg = msg?.trim();
 
   IntlRawEntry copyWith({String? msg}) => IntlRawEntry(key, msg ?? this.msg);
 
@@ -84,8 +85,9 @@ extension ListIntlRawEntryExtension on List<IntlRawEntry?> {
 
   /// List the duplicated keys.
   List<MapEntry<String, List<IntlRawEntry>>> duplicated() {
-    var duplicated =
-        groupByKey().entries.where((e) => e.value.length > 1).toList();
+    var duplicated = groupByKey().entries
+        .where((e) => e.value.length > 1)
+        .toList();
     return duplicated;
   }
 
@@ -93,11 +95,13 @@ extension ListIntlRawEntryExtension on List<IntlRawEntry?> {
   /// - Key: [IntlRawEntry.key]
   /// - Value: [List] of [IntlRawEntry].
   Map<String, IntlRawEntry> toMap() => Map<String, IntlRawEntry>.fromEntries(
-      nonNulls.map((e) => MapEntry(e.key, e)));
+    nonNulls.map((e) => MapEntry(e.key, e)),
+  );
 
   /// Converts this [List] of [IntlRawEntry] to a [String] with all the entries (`.intl` file format).
-  FutureOr<String> toIntlFileContent(
-      {FutureOr<String?> Function(String key, String? msg)? resolver}) async {
+  FutureOr<String> toIntlFileContent({
+    FutureOr<String?> Function(String key, String? msg)? resolver,
+  }) async {
     var s = StringBuffer();
 
     var entries = toList();
@@ -143,10 +147,12 @@ extension ListIntlRawEntryExtension on List<IntlRawEntry?> {
 }
 
 /// Checks an `.intl` file. Returns the file entries ([IntlRawEntry]) if OK or `null` if the check fails.
-List<IntlRawEntry?>? checkIntlEntries(List<IntlRawEntry?> entries,
-    {String? file,
-    String fileType = 'FILE',
-    void Function(String type, Object? msg)? log}) {
+List<IntlRawEntry?>? checkIntlEntries(
+  List<IntlRawEntry?> entries, {
+  String? file,
+  String fileType = 'FILE',
+  void Function(String type, Object? msg)? log,
+}) {
   log ??= _log;
 
   if (entries.isEmpty) {
@@ -165,8 +171,10 @@ List<IntlRawEntry?>? checkIntlEntries(List<IntlRawEntry?> entries,
 
       var first = values.first;
       if (values.every((e) => e.equals(first, checkMsg: true))) {
-        log('CHECK',
-            "-- [IGNORING IDENTICAL DUPLICATES] ${e.key} = <<${e.value.map((e) => e.msg ?? '').join('>><<')}>>");
+        log(
+          'CHECK',
+          "-- [IGNORING IDENTICAL DUPLICATES] ${e.key} = <<${e.value.map((e) => e.msg ?? '').join('>><<')}>>",
+        );
 
         var count = 0;
 
@@ -187,12 +195,16 @@ List<IntlRawEntry?>? checkIntlEntries(List<IntlRawEntry?> entries,
   }
 
   if (duplicated.isNotEmpty) {
-    log('CHECK',
-        "Duplicated `intl` entries in ${file != null ? 'file: $file' : 'file.'}");
+    log(
+      'CHECK',
+      "Duplicated `intl` entries in ${file != null ? 'file: $file' : 'file.'}",
+    );
 
     for (var e in duplicated) {
-      log('CHECK',
-          "-- ${e.key} = <<${e.value.map((e) => e.msg ?? '').join('>><<')}>>");
+      log(
+        'CHECK',
+        "-- ${e.key} = <<${e.value.map((e) => e.msg ?? '').join('>><<')}>>",
+      );
     }
 
     return null;
@@ -205,16 +217,19 @@ List<IntlRawEntry?>? checkIntlEntries(List<IntlRawEntry?> entries,
 /// Returns `null` if all [entries] are OK, or return a [List] with
 /// `missingKeys` and `extraKeys` if the check fails.
 List<List<String>>? checkIntlEntriesReference(
-    List<IntlRawEntry?> referenceEntries, List<IntlRawEntry?> entries,
-    {void Function(String type, Object? msg)? log}) {
+  List<IntlRawEntry?> referenceEntries,
+  List<IntlRawEntry?> entries, {
+  void Function(String type, Object? msg)? log,
+}) {
   log ??= _log;
 
   var refMap = referenceEntries.toMap();
 
   var fileMap = entries.toMap();
 
-  var missingKeys =
-      refMap.keys.whereNot((k) => fileMap.containsKey(k)).toList();
+  var missingKeys = refMap.keys
+      .whereNot((k) => fileMap.containsKey(k))
+      .toList();
 
   var extraKeys = fileMap.keys.whereNot((k) => refMap.containsKey(k)).toList();
 

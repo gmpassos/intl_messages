@@ -13,8 +13,11 @@ class IntlResourceUri {
 
   final ResourceContentCache? _resourceContentCache;
 
-  IntlResourceUri(this.uriLocalePattern, this.mainUri,
-      [this._resourceContentCache]);
+  IntlResourceUri(
+    this.uriLocalePattern,
+    this.mainUri, [
+    this._resourceContentCache,
+  ]);
 
   /// Resolves the Uri with the desired locale code and available URIs.
   Future<ResourceContent?> resolveResourceContent() async {
@@ -70,7 +73,8 @@ String replaceLocale(RegExp pattern, String path, String locale) {
     s2 += g0.substring(idx + g1.length);
   } else {
     throw StateError(
-        'Locale pattern only can have 1 group: match groups: ${match.groupCount}');
+      'Locale pattern only can have 1 group: match groups: ${match.groupCount}',
+    );
   }
 
   s2 += path.substring(match.end);

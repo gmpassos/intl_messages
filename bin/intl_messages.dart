@@ -20,8 +20,13 @@ Future<void> main(List<String> args) async {
     ..addCommand(FixCommand())
     ..addCommand(FormatCommand());
 
-  runner.argParser.addFlag('version',
-      abbr: 'v', negatable: false, defaultsTo: false, help: 'Show version.');
+  runner.argParser.addFlag(
+    'version',
+    abbr: 'v',
+    negatable: false,
+    defaultsTo: false,
+    help: 'Show version.',
+  );
 
   var argsResult = runner.argParser.parse(args);
 
@@ -113,10 +118,7 @@ class FixCommand extends Command<bool> {
       abbr: 't',
       help: 'The translator to use.',
       defaultsTo: 'console',
-      allowed: [
-        'openai',
-        'console',
-      ],
+      allowed: ['openai', 'console'],
       allowedHelp: {
         'openai': 'OpenAI translator (using ChatGPT) [requires `api-key`].',
         'console': 'Translate using console prompts.',
@@ -125,8 +127,10 @@ class FixCommand extends Command<bool> {
     argParser.addOption('api-key', help: 'The translator API-Key.');
     argParser.addFlag('confirm', help: 'Confirm translation.');
     argParser.addOption('cache', help: 'Translator cache directory.');
-    argParser.addFlag('overwrite',
-        help: 'Overwrite `file` with the fixed version.');
+    argParser.addFlag(
+      'overwrite',
+      help: 'Overwrite `file` with the fixed version.',
+    );
   }
 
   @override
@@ -205,7 +209,8 @@ class FixCommand extends Command<bool> {
       var language = allLocales()[fileLocale.code];
       if (language == null) {
         throw StateError(
-            "Can't find language for locale: $fileLocale (${argFile.path})");
+          "Can't find language for locale: $fileLocale (${argFile.path})",
+        );
       }
 
       var translator = resolveTranslator(fileLocale);
@@ -223,8 +228,12 @@ class FixCommand extends Command<bool> {
 
       var confirm = argConfirm;
 
-      var translations = await translator
-          .translate(missingMap, refLocale!, fileLocale, confirm: confirm);
+      var translations = await translator.translate(
+        missingMap,
+        refLocale!,
+        fileLocale,
+        confirm: confirm,
+      );
 
       if (translations != null) {
         var translatorConsole = TranslatorConsole();
@@ -242,12 +251,20 @@ class FixCommand extends Command<bool> {
             if (m == null || m.isEmpty) continue;
 
             var ok = translatorConsole.confirmTranslation(
-                k, m, refLocale, fileLocale);
+              k,
+              m,
+              refLocale,
+              fileLocale,
+            );
 
             if (!ok) {
               var m0 = missingMap[k] ?? m;
               var m2 = await translatorConsole.promptTranslation(
-                  k, m0, refLocale, fileLocale);
+                k,
+                m0,
+                refLocale,
+                fileLocale,
+              );
               translatedEntries[i] = IntlRawEntry(k, m2);
             }
           }
@@ -288,11 +305,14 @@ class FixCommand extends Command<bool> {
     if (cacheDir != null) {
       if (!cacheDir.existsSync()) {
         throw StateError(
-            'Invalid `Translator` cache directory: ${cacheDir.path}');
+          'Invalid `Translator` cache directory: ${cacheDir.path}',
+        );
       }
 
-      translatorCache =
-          TranslatorCacheDirectory(cacheDir, logger: _translatorLog);
+      translatorCache = TranslatorCacheDirectory(
+        cacheDir,
+        logger: _translatorLog,
+      );
     }
 
     var argTranslator = this.argTranslator;
@@ -314,7 +334,10 @@ class FixCommand extends Command<bool> {
       }
 
       return TranslatorOpenAI(
-          apiKey: apiKey, logger: _translatorLog, cache: translatorCache);
+        apiKey: apiKey,
+        logger: _translatorLog,
+        cache: translatorCache,
+      );
     } else {
       throw ArgumentError("Can't handle translator: `$argTranslator`");
     }
@@ -346,8 +369,10 @@ class FormatCommand extends Command<bool> {
     argParser
       ..addOption('file', abbr: 'f', help: 'File to check.')
       ..addOption('ref', help: 'Reference file.')
-      ..addFlag('overwrite',
-          help: 'Overwrite `file` with the formatted version.');
+      ..addFlag(
+        'overwrite',
+        help: 'Overwrite `file` with the formatted version.',
+      );
   }
 
   @override
@@ -380,8 +405,10 @@ class FormatCommand extends Command<bool> {
     var argRef = this.argRef;
 
     if (argRef?.path == argFile.path) {
-      _log('FORMAT',
-          "`ref` parameter value is the same of `file` parameter: ${argFile.path}");
+      _log(
+        'FORMAT',
+        "`ref` parameter value is the same of `file` parameter: ${argFile.path}",
+      );
       return false;
     }
 

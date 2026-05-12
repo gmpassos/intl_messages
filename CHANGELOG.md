@@ -1,3 +1,16 @@
+## 3.0.1
+
+- `TranslatorOpenAI`:
+  - Updated default model from `gpt-3.5-turbo` to `gpt-4.1-mini`.
+  - Added static constant `defaultModel` with value `gpt-4.1-mini`.
+  - Default value of `model` parameter changed to `defaultModel`.
+
+- Dependencies:
+  - Updated Dart SDK constraint to `>=3.10.0 <4.0.0`.
+  - Updated `swiss_knife` from ^3.3.5 to ^3.3.14.
+  - Updated `async_extension` from ^1.2.21 to ^1.2.22.
+  - Updated `test` from ^1.29.0 to ^1.31.1.
+
 ## 3.0.0
 
 - Release v3.0.0

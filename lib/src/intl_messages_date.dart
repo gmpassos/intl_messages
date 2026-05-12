@@ -7,8 +7,11 @@ import 'intl_messages_base.dart';
 import 'intl_messages_basic_dictionary.dart';
 
 /// Returns the localized title message for [rangeType].
-String? getDateRangeTypeTitle(DateRangeType rangeType,
-    [IntlLocale? locale, IntlLocale? localeFallback]) {
+String? getDateRangeTypeTitle(
+  DateRangeType rangeType, [
+  IntlLocale? locale,
+  IntlLocale? localeFallback,
+]) {
   switch (rangeType) {
     case DateRangeType.today:
       return IntlBasicDictionary.msg('today', locale, localeFallback);
@@ -16,20 +19,36 @@ String? getDateRangeTypeTitle(DateRangeType rangeType,
       return IntlBasicDictionary.msg('yesterday', locale, localeFallback);
     case DateRangeType.last7Days:
       return IntlBasicDictionary.buildMsg(
-          'last N days', ['7'], locale, localeFallback);
+        'last N days',
+        ['7'],
+        locale,
+        localeFallback,
+      );
     case DateRangeType.thisWeek:
       return IntlBasicDictionary.msg('this week', locale, localeFallback);
     case DateRangeType.lastWeek:
       return IntlBasicDictionary.msg('last week', locale, localeFallback);
     case DateRangeType.last30Days:
       return IntlBasicDictionary.buildMsg(
-          'last N days', ['30'], locale, localeFallback);
+        'last N days',
+        ['30'],
+        locale,
+        localeFallback,
+      );
     case DateRangeType.last60Days:
       return IntlBasicDictionary.buildMsg(
-          'last N days', ['60'], locale, localeFallback);
+        'last N days',
+        ['60'],
+        locale,
+        localeFallback,
+      );
     case DateRangeType.last90Days:
       return IntlBasicDictionary.buildMsg(
-          'last N days', ['90'], locale, localeFallback);
+        'last N days',
+        ['90'],
+        locale,
+        localeFallback,
+      );
     case DateRangeType.lastMonth:
       return IntlBasicDictionary.msg('last month', locale, localeFallback);
     case DateRangeType.thisMonth:
@@ -92,8 +111,11 @@ bool getTimeFormatUsesAMPM([IntlLocale? locale]) {
 
 /// Gets a date range, [startTime] and [endTime], and formats it's texts with [locale], trying to use less characters.
 String formatDateRangeText(
-    DateTime startTime, DateTime endTime, bool hasTimePicker,
-    [IntlLocale? locale]) {
+  DateTime startTime,
+  DateTime endTime,
+  bool hasTimePicker, [
+  IntlLocale? locale,
+]) {
   locale ??= IntlLocale.getDefaultIntlLocale();
 
   var startFormat = getDateFormat_yMMMd();
@@ -122,15 +144,17 @@ String formatDateRangeText(
 
   var mergeDate = sameDay || startText == endText;
 
-  var isFullDayTimeRange = startTime.hour == 0 &&
+  var isFullDayTimeRange =
+      startTime.hour == 0 &&
       startTime.minute == 0 &&
       endTime.hour == 23 &&
       endTime.minute == 59;
 
   var usesAMPM = getTimeFormatUsesAMPM(locale);
 
-  var timeFormat =
-      usesAMPM ? DateFormat('h:mm a', locale.code) : DateFormat.Hm();
+  var timeFormat = usesAMPM
+      ? DateFormat('h:mm a', locale.code)
+      : DateFormat.Hm();
   var timeGroupOpen = usesAMPM ? '' : '[';
   var timeGroupClose = usesAMPM ? '' : ']';
 

@@ -22,7 +22,7 @@ class IntlResourceContent extends ResourceContent {
   final String locale;
 
   IntlResourceContent(this.locale, Resource resource, [String? content])
-      : super(resource, content);
+    : super(resource, content);
 }
 
 /// Internationalized resource discover. Identifies and loads available
@@ -60,8 +60,9 @@ class IntlResourceDiscover {
 
     final toLookup = _allLocales.toList();
 
-    return _languagesToLookupAsync ??=
-        _getDefinedLocales().resolveMapped((defined) {
+    return _languagesToLookupAsync ??= _getDefinedLocales().resolveMapped((
+      defined,
+    ) {
       if (defined.isNotEmpty) {
         toLookup.retainWhere((l) => defined.contains(l));
 
@@ -202,7 +203,8 @@ class IntlResourceDiscover {
 
   /// Finds the resource withe [locales].
   Future<List<IntlResourceContent>> findWithLocales(
-      List<String> locales) async {
+    List<String> locales,
+  ) async {
     var found = <IntlResourceContent>[];
     if (locales.isEmpty) return found;
 
@@ -234,7 +236,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '3.0.0';
+  static const String VERSION = '3.0.1';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -265,14 +267,17 @@ class IntlMessages {
 
   /// Finds with [discover] and register resolved [IntlResourceContent].
   Future<bool> findAndRegisterMessagesResources(
-      IntlResourceDiscover discover) async {
+    IntlResourceDiscover discover,
+  ) async {
     var resources = await discover.findAll();
     return registerMessagesResourcesContents(resources);
   }
 
   /// Finds with [discover] using [locales] and register resolved [IntlResourceContent].
   Future<bool> findAndRegisterMessagesResourcesWithLocales(
-      IntlResourceDiscover discover, List<String> locales) async {
+    IntlResourceDiscover discover,
+    List<String> locales,
+  ) async {
     var resources = await discover.findWithLocales(locales);
     return registerMessagesResourcesContents(resources);
   }
@@ -284,7 +289,8 @@ class IntlMessages {
 
   /// Register resolved [resources].
   Future<bool> registerMessagesResourcesContents(
-      List<IntlResourceContent> resources) async {
+    List<IntlResourceContent> resources,
+  ) async {
     if (resources.isEmpty) return Future.value(false);
 
     var ok = false;
@@ -299,7 +305,8 @@ class IntlMessages {
 
   /// Register resolved [resource].
   Future<bool> registerMessagesResourceContent(
-      IntlResourceContent resource) async {
+    IntlResourceContent resource,
+  ) async {
     var content = await resource.getContent();
     var locale = IntlLocale.code(resource.locale);
     return registerMessages(locale, content ?? '');
@@ -436,8 +443,10 @@ class IntlMessages {
   }
 
   static final RegExp _messageKeyBlock = RegExp(
-      r"""(?:^|[\r\n])([^\r\n]+?)=(?:'''[\r\n]?(.*?)[\r\n]?'''|"{3}[\r\n]?(.*?)[\r\n]?"{3})([^\r\n]*)""",
-      multiLine: false, dotAll: true);
+    r"""(?:^|[\r\n])([^\r\n]+?)=(?:'''[\r\n]?(.*?)[\r\n]?'''|"{3}[\r\n]?(.*?)[\r\n]?"{3})([^\r\n]*)""",
+    multiLine: false,
+    dotAll: true,
+  );
 
   List<Message> _parseContentProperties(String content) {
     var messages = <Message>[];
@@ -565,7 +574,8 @@ class IntlMessages {
 
     var sameLang = List<IntlLocale>.from(locales);
     sameLang.retainWhere(
-        (l) => l.language == currentLocale.language && l != currentLocale);
+      (l) => l.language == currentLocale.language && l != currentLocale,
+    );
 
     if (sameLang.isNotEmpty) {
       idx = locales.indexOf(currentLocale);
@@ -697,8 +707,10 @@ class IntlMessages {
   final Set<IntlResourceDiscover> _resourceDiscovers = {};
 
   /// Register a [discover] for resources.
-  Future<bool> registerResourceDiscover(IntlResourceDiscover discover,
-      {bool allowAutoDiscover = true}) async {
+  Future<bool> registerResourceDiscover(
+    IntlResourceDiscover discover, {
+    bool allowAutoDiscover = true,
+  }) async {
     if (_resourceDiscovers.contains(discover)) return false;
 
     var changed = _resourceDiscovers.add(discover);
@@ -751,14 +763,18 @@ class IntlMessages {
   }
 
   FutureOr<bool> _autoDiscoverImpl2(List<IntlLocale> possibleLocalesOrder) {
-    var localesOkAsync = Map.fromEntries(possibleLocalesOrder.map((l) {
-      var retAsync = _autoFindLocalizedMessagesAsync(l);
-      return MapEntry(l, retAsync);
-    })).resolveAllValues();
+    var localesOkAsync = Map.fromEntries(
+      possibleLocalesOrder.map((l) {
+        var retAsync = _autoFindLocalizedMessagesAsync(l);
+        return MapEntry(l, retAsync);
+      }),
+    ).resolveAllValues();
 
     return localesOkAsync.resolveMapped((localesOk) {
-      final found =
-          localesOk.entries.where((e) => e.value).map((e) => e.key).toSet();
+      final found = localesOk.entries
+          .where((e) => e.value)
+          .map((e) => e.key)
+          .toSet();
 
       if (_resourceDiscovers.isNotEmpty) {
         return _autoDiscoverImpl3(found);
@@ -897,11 +913,16 @@ class IntlMessages {
 
   /// Returns a [IntlKey] for message [key],
   /// with optional parameters [variables] or [variablesProvider].
-  IntlKey key(String key,
-          {Map<String, dynamic>? variables,
-          IntlVariablesProvider? variablesProvider}) =>
-      IntlKey(this, key,
-          variables: variables, variablesProvider: variablesProvider);
+  IntlKey key(
+    String key, {
+    Map<String, dynamic>? variables,
+    IntlVariablesProvider? variablesProvider,
+  }) => IntlKey(
+    this,
+    key,
+    variables: variables,
+    variablesProvider: variablesProvider,
+  );
 
   /// Get a message with [key] and returns a corresponding [MessageBuilder].
   MessageBuilder msg(String key, {Object? preferredLocale}) {
@@ -1100,8 +1121,9 @@ class LocalizedMessages {
 
 List<String> _allLocalesCodes = allLocalesCodes();
 
-List<IntlLocale> _allLocales =
-    _allLocalesCodes.map((l) => IntlLocale(l)).toList();
+List<IntlLocale> _allLocales = _allLocalesCodes
+    .map((l) => IntlLocale(l))
+    .toList();
 
 int _getLocaledIndex(String locale) {
   var idx = _allLocalesCodes.indexOf(locale);
@@ -1148,8 +1170,9 @@ abstract class _IntlDefaultLocale {
     if (_initialized) return;
     _initialized = true;
 
-    LocalesManager.onDefineLocaleLibraryIntegration
-        .listen((l) => _setLocale(l));
+    LocalesManager.onDefineLocaleLibraryIntegration.listen(
+      (l) => _setLocale(l),
+    );
 
     var defaultLocale = Intl.defaultLocale;
 
@@ -1530,7 +1553,10 @@ class Message {
       _description = description;
     } else {
       throw ArgumentError.value(
-          entry, 'entry', 'Invalid entry as Message: Not a List or a Map.');
+        entry,
+        'entry',
+        'Invalid entry as Message: Not a List or a Map.',
+      );
     }
   }
 
@@ -1570,8 +1596,10 @@ class MessageBlock {
     _branches.sort((a, b) => a.compareTo(b));
   }
 
-  static final RegExp _regexpBlockSplitter =
-      RegExp(r'(\\)?\|', multiLine: true);
+  static final RegExp _regexpBlockSplitter = RegExp(
+    r'(\\)?\|',
+    multiLine: true,
+  );
 
   factory MessageBlock(String block) {
     var parts = <String>[];
@@ -1674,7 +1702,10 @@ class MessageBlockBranch {
 
     if (idx < 0) {
       return MessageBlockBranch._(
-          MessageBlockBranchType.defaultBranch, null, MessageValue(branch));
+        MessageBlockBranchType.defaultBranch,
+        null,
+        MessageValue(branch),
+      );
     }
 
     var typeStr = branch.substring(0, idx).trim();
@@ -1689,19 +1720,23 @@ class MessageBlockBranch {
       var varName = typeStr.substring(idx2 + 1, idx3).trim();
 
       return MessageBlockBranch._(
-          MessageBlockBranchType.values.firstWhereOrNull(
-                  (e) => equalsIgnoreAsciiCase(e.name, type)) ??
-              MessageBlockBranchType.defaultBranch,
-          varName,
-          MessageValue(value));
+        MessageBlockBranchType.values.firstWhereOrNull(
+              (e) => equalsIgnoreAsciiCase(e.name, type),
+            ) ??
+            MessageBlockBranchType.defaultBranch,
+        varName,
+        MessageValue(value),
+      );
     } else {
       typeStr = typeStr.toLowerCase();
       return MessageBlockBranch._(
-          MessageBlockBranchType.values.firstWhereOrNull(
-                  (e) => equalsIgnoreAsciiCase(e.name, typeStr)) ??
-              MessageBlockBranchType.defaultBranch,
-          null,
-          MessageValue(value));
+        MessageBlockBranchType.values.firstWhereOrNull(
+              (e) => equalsIgnoreAsciiCase(e.name, typeStr),
+            ) ??
+            MessageBlockBranchType.defaultBranch,
+        null,
+        MessageValue(value),
+      );
     }
   }
 
@@ -1863,8 +1898,10 @@ class MessageValue {
   @override
   int get hashCode => _values.hashCode;
 
-  static final RegExp _regexpBlock =
-      RegExp(r'\{((?:[^}]+|\\})+?)\}', multiLine: true);
+  static final RegExp _regexpBlock = RegExp(
+    r'\{((?:[^}]+|\\})+?)\}',
+    multiLine: true,
+  );
 
   factory MessageValue(dynamic value) {
     var built = <dynamic>[];
@@ -2003,8 +2040,12 @@ class IntlKey {
   /// The variables provider [Function] to pass when calling [MessageBuilder].
   final IntlVariablesProvider? variablesProvider;
 
-  IntlKey(this.intlMessages, this.key,
-      {this.variables, this.variablesProvider});
+  IntlKey(
+    this.intlMessages,
+    this.key, {
+    this.variables,
+    this.variablesProvider,
+  });
 
   /// Returns a copy of this [IntlKey] with [variables].
   IntlKey withVariables(Map<String, dynamic> variables) =>
@@ -2084,8 +2125,12 @@ class IntlMessagesLoader {
   static final Map<IntlMessagesLoader, IntlMessagesLoader> _instances = {};
 
   /// Returns a cached instance.
-  factory IntlMessagesLoader(String? package, String? pathPrefix,
-      {String extension = '.intl', bool autoLoad = true}) {
+  factory IntlMessagesLoader(
+    String? package,
+    String? pathPrefix, {
+    String extension = '.intl',
+    bool autoLoad = true,
+  }) {
     package = _normalizePackage(package);
     pathPrefix = _normalizePathPrefix(pathPrefix);
     extension = _normalizeExtension(extension);
@@ -2117,10 +2162,16 @@ class IntlMessagesLoader {
   late IntlMessages _messages;
 
   IntlMessagesLoader._(
-      this._package, this._pathPrefix, this._extension, bool autoLoad) {
+    this._package,
+    this._pathPrefix,
+    this._extension,
+    bool autoLoad,
+  ) {
     _messages = IntlMessages.package(_package)
-      ..registerResourceDiscover(IntlResourceDiscover(_pathPrefix, _extension),
-          allowAutoDiscover: false);
+      ..registerResourceDiscover(
+        IntlResourceDiscover(_pathPrefix, _extension),
+        allowAutoDiscover: false,
+      );
 
     if (autoLoad) {
       ensureLoaded();

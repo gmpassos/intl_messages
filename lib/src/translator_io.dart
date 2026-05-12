@@ -12,13 +12,15 @@ class TranslatorCacheDirectory extends TranslatorCache {
   TranslatorCacheDirectory(this.directory, {super.logger}) {
     if (!directory.existsSync()) {
       throw StateError(
-          "Invalid `TranslatorCache` directory: ${directory.path}");
+        "Invalid `TranslatorCache` directory: ${directory.path}",
+      );
     }
   }
 
   Directory _cacheDirectory(IntlLocale fromLocale, IntlLocale toLocale) {
     return Directory(
-        pack_path.join(directory.path, fromLocale.code, toLocale.code));
+      pack_path.join(directory.path, fromLocale.code, toLocale.code),
+    );
   }
 
   File _cacheFile(IntlLocale fromLocale, IntlLocale toLocale, String key) {
@@ -31,7 +33,11 @@ class TranslatorCacheDirectory extends TranslatorCache {
 
   @override
   String? get(
-      String key, String message, IntlLocale fromLocale, IntlLocale toLocale) {
+    String key,
+    String message,
+    IntlLocale fromLocale,
+    IntlLocale toLocale,
+  ) {
     var file = _cacheFile(fromLocale, toLocale, key);
     if (!file.existsSync()) {
       return null;
@@ -46,13 +52,17 @@ class TranslatorCacheDirectory extends TranslatorCache {
 
     var from = o['from'] as String?;
     if (from != fromLocale.code) {
-      log('[ERROR] Invalid `from` code (`$from` != `${fromLocale.code}`) at file: ${file.path}');
+      log(
+        '[ERROR] Invalid `from` code (`$from` != `${fromLocale.code}`) at file: ${file.path}',
+      );
       return null;
     }
 
     var to = o['to'] as String?;
     if (to != toLocale.code) {
-      log('[ERROR] Invalid `to` code (`$to` != `${toLocale.code}`) at file: ${file.path}');
+      log(
+        '[ERROR] Invalid `to` code (`$to` != `${toLocale.code}`) at file: ${file.path}',
+      );
       return null;
     }
 
@@ -69,7 +79,9 @@ class TranslatorCacheDirectory extends TranslatorCache {
     var messageNorm = _normalizeMessage(message);
 
     if (translationSourceNorm != messageNorm) {
-      log('[WARNING] Not matching `message` at file: ${file.path}\n<$translationSourceNorm> != <$messageNorm>');
+      log(
+        '[WARNING] Not matching `message` at file: ${file.path}\n<$translationSourceNorm> != <$messageNorm>',
+      );
       return null;
     }
 
@@ -83,8 +95,13 @@ class TranslatorCacheDirectory extends TranslatorCache {
   }
 
   @override
-  bool store(String key, String message, String translatedMessage,
-      IntlLocale fromLocale, IntlLocale toLocale) {
+  bool store(
+    String key,
+    String message,
+    String translatedMessage,
+    IntlLocale fromLocale,
+    IntlLocale toLocale,
+  ) {
     var file = _cacheFile(fromLocale, toLocale, key);
 
     var dir = file.parent;
@@ -106,7 +123,9 @@ class TranslatorCacheDirectory extends TranslatorCache {
       file.writeAsStringSync(j);
       return true;
     } catch (e) {
-      log('[ERROR] Error storing `${fromLocale.code}` -> ${toLocale.code}> key: $key ; message: $message');
+      log(
+        '[ERROR] Error storing `${fromLocale.code}` -> ${toLocale.code}> key: $key ; message: $message',
+      );
       return false;
     }
   }

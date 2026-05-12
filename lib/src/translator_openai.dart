@@ -12,7 +12,9 @@ class TranslatorOpenAI extends Translator {
   /// OpenAI API-Key.
   final String apiKey;
 
-  /// Model name. Default: `gpt-3.5-turbo`
+  static const defaultModel = 'gpt-4.1-mini';
+
+  /// Model name. Default: `gpt-4.1-mini`
   final String model;
 
   @override
@@ -21,31 +23,37 @@ class TranslatorOpenAI extends Translator {
   /// Maximum retries for failed requests (HTTP Status 429).
   final int maxRetries = 3;
 
-  TranslatorOpenAI(
-      {required this.apiKey,
-      this.model = 'gpt-3.5-turbo',
-      this.maxBlockLength = 500,
-      int maxParallelTranslations = 2,
-      super.logger,
-      super.cache})
-      : super(
-            translateBlocksInParallel: true,
-            maxParallelTranslations:
-                math.max(1, math.min(maxParallelTranslations, 10)));
+  TranslatorOpenAI({
+    required this.apiKey,
+    this.model = defaultModel,
+    this.maxBlockLength = 500,
+    int maxParallelTranslations = 2,
+    super.logger,
+    super.cache,
+  }) : super(
+         translateBlocksInParallel: true,
+         maxParallelTranslations: math.max(
+           1,
+           math.min(maxParallelTranslations, 10),
+         ),
+       );
 
   @override
   Future<Map<String, String>?> translateBlock(
-      Map<String, String> entries,
-      IntlLocale fromLocale,
-      IntlLocale toLocale,
-      String fromLanguage,
-      String toLanguage,
-      bool confirm) async {
-    var blk = entries.entries.map((e) {
-      var k = e.key.trim();
-      var m = e.value.replaceAll(RegExp(r'\s+'), ' ').trim();
-      return '$k=$m';
-    }).join('\n');
+    Map<String, String> entries,
+    IntlLocale fromLocale,
+    IntlLocale toLocale,
+    String fromLanguage,
+    String toLanguage,
+    bool confirm,
+  ) async {
+    var blk = entries.entries
+        .map((e) {
+          var k = e.key.trim();
+          var m = e.value.replaceAll(RegExp(r'\s+'), ' ').trim();
+          return '$k=$m';
+        })
+        .join('\n');
 
     var headerKey = 'key';
     if (entries.containsKey(headerKey)) {
@@ -83,8 +91,9 @@ class TranslatorOpenAI extends Translator {
       translation1Valids.removeWhere((key, _) => invalidKeys1.contains(key));
 
       translation2Valids.removeWhere((key, _) => invalidKeys2.contains(key));
-      translation2Valids
-          .removeWhere((key, _) => translation1Valids.containsKey(key));
+      translation2Valids.removeWhere(
+        (key, _) => translation1Valids.containsKey(key),
+      );
 
       var translation3 = {...translation1Valids, ...translation2Valids};
 
@@ -104,7 +113,9 @@ class TranslatorOpenAI extends Translator {
           }
         }
 
-        log('RETURNING PARTIAL TRANSLATION> Not translated keys: $invalidKeys3');
+        log(
+          'RETURNING PARTIAL TRANSLATION> Not translated keys: $invalidKeys3',
+        );
       }
 
       return translation3;
@@ -114,7 +125,10 @@ class TranslatorOpenAI extends Translator {
   }
 
   List<String>? validateTranslation(
-      Map<String, String> entries, Map<String, String> translation, int id) {
+    Map<String, String> entries,
+    Map<String, String> translation,
+    int id,
+  ) {
     var notTranslated = entries.entries.where((e) {
       var k = e.key;
       var m = entries[k]?.trim().toLowerCase();
@@ -127,7 +141,9 @@ class TranslatorOpenAI extends Translator {
     }).toList();
 
     if (notTranslated.isNotEmpty) {
-      log('NOT TRANSLATED[$id] KEYS> <${notTranslated.map((e) => '${e.key}: ${e.value}').join('> <')}>');
+      log(
+        'NOT TRANSLATED[$id] KEYS> <${notTranslated.map((e) => '${e.key}: ${e.value}').join('> <')}>',
+      );
 
       var invalidKeys = notTranslated.map((e) => e.key).toList();
       return invalidKeys;
@@ -137,19 +153,23 @@ class TranslatorOpenAI extends Translator {
   }
 
   ({String instruction, String prompt}) _buildPrompt1(
-          String language, String blk) =>
-      (
-        instruction:
-            'Translate the texts on each line after "=" into $language keeping the same format:',
-        prompt: blk
-      );
+    String language,
+    String blk,
+  ) => (
+    instruction:
+        'Translate the texts on each line after "=" into $language keeping the same format:',
+    prompt: blk,
+  );
 
   ({String instruction, String prompt}) _buildPrompt2(
-      String language, String blk) {
+    String language,
+    String blk,
+  ) {
     return (
       instruction:
           'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:',
-      prompt: 'key=message\n'
+      prompt:
+          'key=message\n'
           '$blk\n',
     );
   }
@@ -209,8 +229,9 @@ class TranslatorOpenAI extends Translator {
 
           var kLC = k.trim().toLowerCase();
 
-          var e = map.entries
-              .firstWhereOrNull((e) => e.key.trim().toLowerCase() == kLC);
+          var e = map.entries.firstWhereOrNull(
+            (e) => e.key.trim().toLowerCase() == kLC,
+          );
           if (e != null) {
             return MapEntry(k, e.value);
           }
@@ -227,8 +248,9 @@ class TranslatorOpenAI extends Translator {
           .toList();
     }
 
-    var entriesTranslated2 =
-        entriesTranslated.map((e) => _normalizeTranslationEntry(entries, e));
+    var entriesTranslated2 = entriesTranslated.map(
+      (e) => _normalizeTranslationEntry(entries, e),
+    );
 
     var mapTranslated = Map<String, String>.fromEntries(entriesTranslated2);
     return mapTranslated;
@@ -237,7 +259,9 @@ class TranslatorOpenAI extends Translator {
   static final _regExpSpace = RegExp(r'\s+');
 
   MapEntry<String, String> _normalizeTranslationEntry(
-      Map<String, String> entries, MapEntry<String, String> e) {
+    Map<String, String> entries,
+    MapEntry<String, String> e,
+  ) {
     final k = e.key;
     final v = e.value;
 
@@ -304,19 +328,17 @@ class TranslatorOpenAI extends Translator {
     var messages = [
       if (instruction != null && instruction.isNotEmpty)
         OpenAIChatCompletionChoiceMessageModel(
-            role: OpenAIChatMessageRole.assistant,
-            content: [
-              OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                instruction,
-              ),
-            ]),
-      OpenAIChatCompletionChoiceMessageModel(
-          role: OpenAIChatMessageRole.user,
+          role: OpenAIChatMessageRole.assistant,
           content: [
-            OpenAIChatCompletionChoiceMessageContentItemModel.text(
-              prompt,
-            ),
-          ]),
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(instruction),
+          ],
+        ),
+      OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.user,
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(prompt),
+        ],
+      ),
     ];
 
     for (var i = 0; i <= maxRetries; ++i) {
@@ -331,7 +353,9 @@ class TranslatorOpenAI extends Translator {
         error = e;
 
         if (e.toString().contains('statusCode: 429')) {
-          log('REQUEST ERROR> statusCode: 429 ; Retrying request: ${i + 1} / $maxRetries');
+          log(
+            'REQUEST ERROR> statusCode: 429 ; Retrying request: ${i + 1} / $maxRetries',
+          );
           var sleep = i == 0 ? 2 : 3;
           await Future.delayed(Duration(seconds: sleep));
         } else {
@@ -347,8 +371,9 @@ class TranslatorOpenAI extends Translator {
       throw StateError("Null response");
     }
 
-    var responses =
-        chatCompletion.choices.map((c) => c.message.content).toList();
+    var responses = chatCompletion.choices
+        .map((c) => c.message.content)
+        .toList();
 
     if (responses.isEmpty) return null;
 

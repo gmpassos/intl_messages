@@ -29,24 +29,22 @@ void main() {
       });
 
       expect(
-          translator.translate({
-            'hello': 'Hello!',
-            'howAreYou': 'HOW are you?',
-          }, IntlLocale.code('en'), IntlLocale.code('pt')),
-          equals({
-            'hello': 'Oi!',
-            'howAreYou': 'Como vai você?',
-          }));
+        translator.translate(
+          {'hello': 'Hello!', 'howAreYou': 'HOW are you?'},
+          IntlLocale.code('en'),
+          IntlLocale.code('pt'),
+        ),
+        equals({'hello': 'Oi!', 'howAreYou': 'Como vai você?'}),
+      );
 
       expect(
-          translator.translate({
-            'hello': 'OI!',
-            'howAreYou': 'Como vai você?',
-          }, IntlLocale.code('pt'), IntlLocale.code('en')),
-          equals({
-            'hello': 'Hello!',
-            'howAreYou': 'How are you?',
-          }));
+        translator.translate(
+          {'hello': 'OI!', 'howAreYou': 'Como vai você?'},
+          IntlLocale.code('pt'),
+          IntlLocale.code('en'),
+        ),
+        equals({'hello': 'Hello!', 'howAreYou': 'How are you?'}),
+      );
     });
   });
 }

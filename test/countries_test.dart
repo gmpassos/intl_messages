@@ -65,8 +65,10 @@ void main() {
 
         expect(getCountryInfo(countryCode: 'us'), equals(countryInfo));
         expect(getCountryInfo(dialCode: 1), equals(countryInfo));
-        expect(getCountryInfo(countryName: 'United States Of America'),
-            equals(countryInfo));
+        expect(
+          getCountryInfo(countryName: 'United States Of America'),
+          equals(countryInfo),
+        );
       }
 
       {

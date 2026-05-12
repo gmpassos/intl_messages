@@ -27,7 +27,8 @@ void main() {
       print('PubSpec.version: ${pubSpec.version}');
 
       var srcFile = File(
-          path.join(projectDirectory.path, 'lib/src/intl_messages_base.dart'));
+        path.join(projectDirectory.path, 'lib/src/intl_messages_base.dart'),
+      );
 
       print(srcFile);
 
@@ -39,9 +40,12 @@ void main() {
 
       print('srcVersion: $srcVersion');
 
-      expect(pubSpec.version.toString(), equals(srcVersion),
-          reason:
-              'IntlMessages.VERSION[$srcVersion] != PubSpec.version[${pubSpec.version}]');
+      expect(
+        pubSpec.version.toString(),
+        equals(srcVersion),
+        reason:
+            'IntlMessages.VERSION[$srcVersion] != PubSpec.version[${pubSpec.version}]',
+      );
     });
   });
 }

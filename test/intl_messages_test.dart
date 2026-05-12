@@ -27,13 +27,17 @@ void main() {
     });
 
     test('Message.keyValue[plural]', () {
-      var msg = Message.keyValue('foo',
-          '{zero[n]:There are no emails for\\|to you \$user.|one[n]:You have 1 email.|two[n]:A pair of e-mails left.|many[n]:You have \$n emails left.|other[n]:Odd number of emails: \$n}');
+      var msg = Message.keyValue(
+        'foo',
+        '{zero[n]:There are no emails for\\|to you \$user.|one[n]:You have 1 email.|two[n]:A pair of e-mails left.|many[n]:You have \$n emails left.|other[n]:Odd number of emails: \$n}',
+      );
 
       expect(msg.key, equals('foo'));
 
-      expect(msg.build({'n': 0, 'user': 'John'}),
-          equals('There are no emails for|to you John.'));
+      expect(
+        msg.build({'n': 0, 'user': 'John'}),
+        equals('There are no emails for|to you John.'),
+      );
       expect(msg.build({'n': 1}), equals('You have 1 email.'));
       expect(msg.build({'n': 2}), equals('A pair of e-mails left.'));
       expect(msg.build({'n': 10}), equals('You have 10 emails left.'));
@@ -82,7 +86,7 @@ void main() {
     test('Message.entry[var]', () {
       var msg = Message.entry({
         'key': 'foo',
-        'value': ['The ', '\$bar']
+        'value': ['The ', '\$bar'],
       });
 
       expect(msg.key, equals('foo'));
@@ -116,8 +120,10 @@ void main() {
     });
 
     test('IntlResourceDiscover.findWithLocales', () async {
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
       print(discover);
 
       var resources = await discover.findWithLocales(['fr']);
@@ -140,8 +146,10 @@ void main() {
     });
 
     test('IntlResourceDiscover.findAll', () async {
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
       var resources = await discover.findAll();
       print(resources.map((r) => r.uri).toList());
 
@@ -151,8 +159,10 @@ void main() {
     });
 
     test('IntlResourceDiscover.findWithLocales', () async {
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
       var resources = await discover.findWithLocales(['fr']);
       print(resources.map((r) => r.uri).toList());
 
@@ -173,32 +183,54 @@ void main() {
     test('IntlLocale.path', () async {
       expect(IntlLocale.path('/web/i18n/msgs-pt.intl').code, equals('pt'));
       expect(
-          IntlLocale.path('/web/i18n/msgs-pt_BR.intl').code, equals('pt_BR'));
+        IntlLocale.path('/web/i18n/msgs-pt_BR.intl').code,
+        equals('pt_BR'),
+      );
       expect(
-          IntlLocale.path('/web/i18n/msgs-pt-BR.intl').code, equals('pt_BR'));
+        IntlLocale.path('/web/i18n/msgs-pt-BR.intl').code,
+        equals('pt_BR'),
+      );
 
       expect(IntlLocale.path('/web/i18n/msgs.pt.intl').code, equals('pt'));
       expect(
-          IntlLocale.path('/web/i18n/msgs.pt_BR.intl').code, equals('pt_BR'));
+        IntlLocale.path('/web/i18n/msgs.pt_BR.intl').code,
+        equals('pt_BR'),
+      );
       expect(
-          IntlLocale.path('/web/i18n/msgs.pt-BR.intl').code, equals('pt_BR'));
+        IntlLocale.path('/web/i18n/msgs.pt-BR.intl').code,
+        equals('pt_BR'),
+      );
 
-      expect(() => IntlLocale.path('/web/i18n/msgs.pt').code,
-          throwsA(isArgumentError));
-      expect(() => IntlLocale.path('/web/i18n/msgs.pt_BR').code,
-          throwsA(isArgumentError));
-      expect(() => IntlLocale.path('/web/i18n/msgs.pt-BR').code,
-          throwsA(isArgumentError));
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.pt').code,
+        throwsA(isArgumentError),
+      );
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.pt_BR').code,
+        throwsA(isArgumentError),
+      );
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.pt-BR').code,
+        throwsA(isArgumentError),
+      );
       expect(IntlLocale.path('/web/i18n/msgs.pt.BR').code, equals('pt'));
 
-      expect(() => IntlLocale.path('/web/i18n/msgs.foo_bar.intl').code,
-          throwsA(isArgumentError));
-      expect(() => IntlLocale.path('/web/i18n/msgs.foo-bar.intl').code,
-          throwsA(isArgumentError));
-      expect(() => IntlLocale.path('/web/i18n/msgs.oo.intl').code,
-          throwsA(isArgumentError));
-      expect(() => IntlLocale.path('/web/i18n/msgs.foo.intl').code,
-          throwsA(isArgumentError));
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.foo_bar.intl').code,
+        throwsA(isArgumentError),
+      );
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.foo-bar.intl').code,
+        throwsA(isArgumentError),
+      );
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.oo.intl').code,
+        throwsA(isArgumentError),
+      );
+      expect(
+        () => IntlLocale.path('/web/i18n/msgs.foo.intl').code,
+        throwsA(isArgumentError),
+      );
 
       expect(IntlLocale.path('/web/i18n/msgs,pt').code, equals('pt'));
       expect(IntlLocale.path('/web/i18n/msgs,pt_BR').code, equals('pt_BR'));
@@ -222,8 +254,10 @@ void main() {
       var package = IntlMessages.package('test-rsc1');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
 
       var resources = await discover.findAll();
       expect(resources.length, equals(2));
@@ -243,8 +277,10 @@ void main() {
       var package = IntlMessages.package('test-rsc2');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
 
       var reg = await package.findAndRegisterMessagesResources(discover);
       expect(reg, equals(true));
@@ -261,11 +297,15 @@ void main() {
       var package = IntlMessages.package('test-rsc3');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
 
-      var reg = await (package
-          .findAndRegisterMessagesResourcesWithLocales(discover, ['fr']));
+      var reg = await (package.findAndRegisterMessagesResourcesWithLocales(
+        discover,
+        ['fr'],
+      ));
       expect(reg, equals(true));
 
       var registeredLocales = package.getRegisteredLocales();
@@ -280,8 +320,10 @@ void main() {
       var package = IntlMessages.package('test-disc1');
       expect(package.getRegisteredLocales(), equals([]));
 
-      var discover =
-          IntlResourceDiscover('${testLocalesBaseUri}test-', '.intl');
+      var discover = IntlResourceDiscover(
+        '${testLocalesBaseUri}test-',
+        '.intl',
+      );
       var reg = package.registerResourceDiscover(discover);
 
       var regComplete = reg.whenComplete(() {
@@ -295,8 +337,9 @@ void main() {
 
       var onRegisterLocalizedMessages = <String>[];
 
-      package.onRegisterLocalizedMessages
-          .listen((l) => onRegisterLocalizedMessages.add(l));
+      package.onRegisterLocalizedMessages.listen(
+        (l) => onRegisterLocalizedMessages.add(l),
+      );
 
       var found = await package.autoDiscover();
 
@@ -385,10 +428,14 @@ void main() {
       var localeFR = IntlLocale('fr');
 
       packageTest1.registerMessages(
-          localeEN, 'foo=x:\$n##Desc foo\nfuz=fx:\$n##Desc fuz!');
+        localeEN,
+        'foo=x:\$n##Desc foo\nfuz=fx:\$n##Desc fuz!',
+      );
 
       packageTest1.registerMessages(
-          localeFR.code, 'foo=a:\$n##Desc foo FR\nfuz=fa:\$n');
+        localeFR.code,
+        'foo=a:\$n##Desc foo FR\nfuz=fa:\$n',
+      );
 
       var msgA1 = packageTest1.msg('foo');
       var msgB1 = packageTest1.msg('fuz');
@@ -457,10 +504,14 @@ void main() {
 
       var pattern2 = RegExp(r'-(LOCALE)-intl');
       var path2 = 'path/file-LOCALE-intl.txt';
-      expect(replaceLocale(pattern2, path2, 'en'),
-          equals('path/file-en-intl.txt'));
-      expect(replaceLocale(pattern2, path2, 'fr'),
-          equals('path/file-fr-intl.txt'));
+      expect(
+        replaceLocale(pattern2, path2, 'en'),
+        equals('path/file-en-intl.txt'),
+      );
+      expect(
+        replaceLocale(pattern2, path2, 'fr'),
+        equals('path/file-fr-intl.txt'),
+      );
     });
   });
 
@@ -468,93 +519,149 @@ void main() {
     setUp(() {});
 
     test('msg', () {
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en')),
-          equals('.'));
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('es')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en')),
+        equals('.'),
+      );
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('es')),
+        equals(','),
+      );
 
       expect(
-          IntlBasicDictionary.decimalDelimiter(
-              IntlLocale.code('xx'), IntlLocale.code('en')),
-          equals('.'));
+        IntlBasicDictionary.decimalDelimiter(
+          IntlLocale.code('xx'),
+          IntlLocale.code('en'),
+        ),
+        equals('.'),
+      );
       expect(
-          IntlBasicDictionary.decimalDelimiter(
-              IntlLocale.code('xx'), IntlLocale.code('es')),
-          equals(','));
+        IntlBasicDictionary.decimalDelimiter(
+          IntlLocale.code('xx'),
+          IntlLocale.code('es'),
+        ),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_CA')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_CA')),
+        equals('.'),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_CA')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_CA')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('pt')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('pt')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('it')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('it')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ru')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ru')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_UK')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_UK')),
+        equals('.'),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_GB')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_GB')),
+        equals('.'),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_AU')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_AU')),
+        equals('.'),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_XX')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('en_XX')),
+        equals('.'),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_XX')),
-          equals(','));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('fr_XX')),
+        equals(','),
+      );
 
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('zh')),
-          equals('.'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('zh')),
+        equals('.'),
+      );
 
       // Arabic decimal separator (U+066B):
-      expect(IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ar')),
-          equals('٫'));
+      expect(
+        IntlBasicDictionary.decimalDelimiter(IntlLocale.code('ar')),
+        equals('٫'),
+      );
     });
 
     test('msg', () {
-      expect(IntlBasicDictionary.msg('help', IntlLocale.code('en')),
-          equals('help'));
-      expect(IntlBasicDictionary.msg('help', IntlLocale.code('pt')),
-          equals('ajuda'));
       expect(
-          IntlBasicDictionary.msg(
-              'help', IntlLocale.code('en'), IntlLocale.code('pt')),
-          equals('help'));
+        IntlBasicDictionary.msg('help', IntlLocale.code('en')),
+        equals('help'),
+      );
       expect(
-          IntlBasicDictionary.msg(
-              'help', IntlLocale.code('es'), IntlLocale.code('pt')),
-          equals('ajuda'));
+        IntlBasicDictionary.msg('help', IntlLocale.code('pt')),
+        equals('ajuda'),
+      );
+      expect(
+        IntlBasicDictionary.msg(
+          'help',
+          IntlLocale.code('en'),
+          IntlLocale.code('pt'),
+        ),
+        equals('help'),
+      );
+      expect(
+        IntlBasicDictionary.msg(
+          'help',
+          IntlLocale.code('es'),
+          IntlLocale.code('pt'),
+        ),
+        equals('ajuda'),
+      );
     });
 
     test('msgUpperCaseInitials', () {
       expect(
-          IntlBasicDictionary.msgUpperCaseInitials(
-              'help', IntlLocale.code('en')),
-          equals('Help'));
+        IntlBasicDictionary.msgUpperCaseInitials('help', IntlLocale.code('en')),
+        equals('Help'),
+      );
       expect(
-          IntlBasicDictionary.msgUpperCaseInitials(
-              'help', IntlLocale.code('pt')),
-          equals('Ajuda'));
+        IntlBasicDictionary.msgUpperCaseInitials('help', IntlLocale.code('pt')),
+        equals('Ajuda'),
+      );
       expect(
-          IntlBasicDictionary.msgUpperCaseInitials(
-              'help', IntlLocale.code('en'), IntlLocale.code('pt')),
-          equals('Help'));
+        IntlBasicDictionary.msgUpperCaseInitials(
+          'help',
+          IntlLocale.code('en'),
+          IntlLocale.code('pt'),
+        ),
+        equals('Help'),
+      );
       expect(
-          IntlBasicDictionary.msgUpperCaseInitials(
-              'help', IntlLocale.code('es'), IntlLocale.code('pt')),
-          equals('Ajuda'));
+        IntlBasicDictionary.msgUpperCaseInitials(
+          'help',
+          IntlLocale.code('es'),
+          IntlLocale.code('pt'),
+        ),
+        equals('Ajuda'),
+      );
     });
   });
 
@@ -562,79 +669,95 @@ void main() {
     setUp(() {});
 
     test('getDateRangeTypeTitle', () {
-      expect(getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('en')),
-          equals('today'));
-      expect(getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('pt')),
-          equals('hoje'));
+      expect(
+        getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('en')),
+        equals('today'),
+      );
+      expect(
+        getDateRangeTypeTitle(DateRangeType.today, IntlLocale.code('pt')),
+        equals('hoje'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('en')),
-          equals('yesterday'));
+        getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('en')),
+        equals('yesterday'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('pt')),
-          equals('ontem'));
+        getDateRangeTypeTitle(DateRangeType.yesterday, IntlLocale.code('pt')),
+        equals('ontem'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('en')),
-          equals('last 7 days'));
+        getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('en')),
+        equals('last 7 days'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('pt')),
-          equals('últimos 7 dias'));
+        getDateRangeTypeTitle(DateRangeType.last7Days, IntlLocale.code('pt')),
+        equals('últimos 7 dias'),
+      );
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last30Days, IntlLocale.code('en')),
-          equals('last 30 days'));
+        getDateRangeTypeTitle(DateRangeType.last30Days, IntlLocale.code('en')),
+        equals('last 30 days'),
+      );
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last30Days, IntlLocale.code('pt')),
-          equals('últimos 30 dias'));
+        getDateRangeTypeTitle(DateRangeType.last30Days, IntlLocale.code('pt')),
+        equals('últimos 30 dias'),
+      );
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last60Days, IntlLocale.code('en')),
-          equals('last 60 days'));
+        getDateRangeTypeTitle(DateRangeType.last60Days, IntlLocale.code('en')),
+        equals('last 60 days'),
+      );
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last60Days, IntlLocale.code('pt')),
-          equals('últimos 60 dias'));
+        getDateRangeTypeTitle(DateRangeType.last60Days, IntlLocale.code('pt')),
+        equals('últimos 60 dias'),
+      );
 
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last90Days, IntlLocale.code('en')),
-          equals('last 90 days'));
+        getDateRangeTypeTitle(DateRangeType.last90Days, IntlLocale.code('en')),
+        equals('last 90 days'),
+      );
       expect(
-          getDateRangeTypeTitle(
-              DateRangeType.last90Days, IntlLocale.code('pt')),
-          equals('últimos 90 dias'));
+        getDateRangeTypeTitle(DateRangeType.last90Days, IntlLocale.code('pt')),
+        equals('últimos 90 dias'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('en')),
-          equals('last week'));
+        getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('en')),
+        equals('last week'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('pt')),
-          equals('última semana'));
+        getDateRangeTypeTitle(DateRangeType.lastWeek, IntlLocale.code('pt')),
+        equals('última semana'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('en')),
-          equals('this week'));
+        getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('en')),
+        equals('this week'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('pt')),
-          equals('esta semana'));
+        getDateRangeTypeTitle(DateRangeType.thisWeek, IntlLocale.code('pt')),
+        equals('esta semana'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('en')),
-          equals('last month'));
+        getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('en')),
+        equals('last month'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('pt')),
-          equals('último mês'));
+        getDateRangeTypeTitle(DateRangeType.lastMonth, IntlLocale.code('pt')),
+        equals('último mês'),
+      );
 
       expect(
-          getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('en')),
-          equals('this month'));
+        getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('en')),
+        equals('this month'),
+      );
       expect(
-          getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('pt')),
-          equals('este mês'));
+        getDateRangeTypeTitle(DateRangeType.thisMonth, IntlLocale.code('pt')),
+        equals('este mês'),
+      );
     });
   });
 }

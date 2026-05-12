@@ -87,7 +87,8 @@ List<String> getPossibleLocalesSequenceInBrowser(String locale) {
   }
 
   print(
-      '-- window.navigator.language: ${web.window.navigator.language} ; ${web.window.navigator.languages} ');
+    '-- window.navigator.language: ${web.window.navigator.language} ; ${web.window.navigator.languages} ',
+  );
 
   for (var l in web.window.navigator.languages.toDart) {
     var s = Intl.canonicalizedLocale(l.toDart);
@@ -112,7 +113,8 @@ List<String> getPossibleLocalesSequenceImpl(String locale) {
 }
 
 LocalesManager createLocalesManagerImpl(
-    InitializeLocaleFunction initializeLocaleFunction,
-    [void Function(String locale)? onDefineLocale]) {
+  InitializeLocaleFunction initializeLocaleFunction, [
+  void Function(String locale)? onDefineLocale,
+]) {
   return LocalesManagerBrowser(initializeLocaleFunction, onDefineLocale);
 }
