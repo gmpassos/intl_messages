@@ -5,7 +5,7 @@ library;
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
-import 'package:pubspec/pubspec.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -21,7 +21,7 @@ void main() {
 
       print('pubspecFile: $pubspecFile');
 
-      var pubSpec = await PubSpec.loadFile(pubspecFile.path);
+      var pubSpec = Pubspec.parse(pubspecFile.readAsStringSync());
 
       print('PubSpec.name: ${pubSpec.name}');
       print('PubSpec.version: ${pubSpec.version}');

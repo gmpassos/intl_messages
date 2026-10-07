@@ -1,3 +1,23 @@
+## 3.0.2
+
+- `IntlLocale.onDefineDefaultLocale`: fixed a `TypeError` on every access. The getter cast the internal
+  `EventStream<String?>` to `EventStream<String>`, which always fails at runtime; the internal stream is now an
+  `EventStream<String>` (it never emitted `null`), so no cast is needed. The public type is unchanged.
+
+- Dependencies:
+  - Updated `dart_openai` from ^4.1.4 to ^8.0.0: `TranslatorOpenAI` uses the legacy `OpenAI.apiKey` /
+    `OpenAI.instance` API, which 8.x keeps unchanged. 8.x also runs on the web (no `dart:io`), and retries
+    429/5xx requests by itself, on top of `TranslatorOpenAI.maxRetries`.
+  - Updated `intl` from ^0.20.2 to ^0.20.3.
+  - Updated `resource_portable` from ^3.1.2 to ^3.1.4.
+  - Updated `yaml` from ^3.1.3 to ^3.1.4.
+  - Updated `collection` from ^1.19.0 to ^1.19.1.
+  - Updated `lints` from ^5.1.1 to ^6.1.0 (a parameter type added for `strict_top_level_inference`).
+  - Updated `test` from ^1.31.1 to ^1.32.0.
+  - Updated `dependency_validator` from ^3.2.3 to ^5.1.0.
+  - Updated `coverage` from ^1.15.0 to ^1.15.1.
+  - Replaced the discontinued `pubspec` with `pubspec_parse: ^1.6.0` (version test).
+
 ## 3.0.1
 
 - `TranslatorOpenAI`:

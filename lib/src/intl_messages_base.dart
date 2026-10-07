@@ -236,7 +236,7 @@ class IntlResourceDiscover {
 /// Represents a message table with keys and values.
 class IntlMessages {
   // ignore: constant_identifier_names
-  static const String VERSION = '3.0.1';
+  static const String VERSION = '3.0.2';
 
   static String normalizePackageName(String packageName) =>
       packageName.toLowerCase().trim();
@@ -414,7 +414,7 @@ class IntlMessages {
     return _parseContentFromJson(json, content);
   }
 
-  List<Message> _parseContentFromJson(json, String content) {
+  List<Message> _parseContentFromJson(Object? json, String content) {
     if (json is Map) {
       var map = json;
       var messages = <Message>[];
@@ -1192,19 +1192,19 @@ abstract class _IntlDefaultLocale {
     }
   }
 
-  static final EventStream<String?> onDefineLocale = EventStream();
+  static final EventStream<String> onDefineLocale = EventStream();
 
   static void _setLocale(Object? locale) {
     if (locale == null) return;
 
-    var intlLocale = IntlLocale(locale);
-    _locale = intlLocale.code;
+    var code = IntlLocale(locale).code;
+    _locale = code;
 
-    Intl.defaultLocale = _locale;
+    Intl.defaultLocale = code;
 
-    IntlMessages._notifySetLocale(_locale);
+    IntlMessages._notifySetLocale(code);
 
-    onDefineLocale.add(_locale);
+    onDefineLocale.add(code);
   }
 }
 
@@ -1225,7 +1225,7 @@ class IntlLocale implements Comparable<IntlLocale> {
   static String? get defaultLocale => getDefaultLocale();
 
   static EventStream<String> get onDefineDefaultLocale =>
-      _IntlDefaultLocale.onDefineLocale as EventStream<String>;
+      _IntlDefaultLocale.onDefineLocale;
 
   static String _normalizeLanguage(String lang) => lang.toLowerCase().trim();
 
