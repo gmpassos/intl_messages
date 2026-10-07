@@ -1,3 +1,9 @@
+## 3.0.2
+
+- `IntlLocale.onDefineDefaultLocale`: fixed a `TypeError` on every access. The getter cast the internal
+  `EventStream<String?>` to `EventStream<String>`, which always fails at runtime; the internal stream is now an
+  `EventStream<String>` (it never emitted `null`), so no cast is needed. The public type is unchanged.
+
 ## 3.0.1
 
 - `TranslatorOpenAI`:

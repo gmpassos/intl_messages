@@ -236,6 +236,27 @@ void main() {
       expect(IntlLocale.path('/web/i18n/msgs,pt_BR').code, equals('pt_BR'));
       expect(IntlLocale.path('/web/i18n/msgs,pt-BR').code, equals('pt_BR'));
     });
+
+    // The getter was a cast of an `EventStream<String?>` to
+    // `EventStream<String>`, a `TypeError` on every access.
+    test('IntlLocale.onDefineDefaultLocale', () async {
+      var prevLocale = IntlLocale.defaultLocale;
+      addTearDown(() => IntlLocale.setDefaultLocale(prevLocale));
+
+      var defined = <String>[];
+      var subscription = IntlLocale.onDefineDefaultLocale.listen(defined.add);
+      addTearDown(subscription.cancel);
+
+      IntlLocale.setDefaultLocale('pt-BR');
+      IntlLocale.setDefaultLocale('fr');
+      // Nothing to define: no event.
+      IntlLocale.setDefaultLocale(null);
+
+      await Future.delayed(Duration.zero);
+
+      expect(defined, equals(['pt_BR', 'fr']));
+      expect(IntlLocale.defaultLocale, equals('fr'));
+    });
   });
 
   group('IntlMessages', () {
