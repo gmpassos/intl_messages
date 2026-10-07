@@ -414,7 +414,7 @@ class IntlMessages {
     return _parseContentFromJson(json, content);
   }
 
-  List<Message> _parseContentFromJson(json, String content) {
+  List<Message> _parseContentFromJson(Object? json, String content) {
     if (json is Map) {
       var map = json;
       var messages = <Message>[];
