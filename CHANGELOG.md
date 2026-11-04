@@ -1,3 +1,17 @@
+## 3.0.3
+
+- Dependencies:
+  - Updated Dart SDK constraint from `>=3.10.0 <4.0.0` to `^3.13.0`.
+  - Updated `swiss_knife` from ^3.3.14 to ^3.4.2. Checked the behaviour changes against intl_messages: the
+    `ResourceContentCache` instances are only accessed through `get` (which still inserts absent items), never
+    `contains`, so no call site relied on the old insert-on-`contains` side effect. None of the other changed
+    APIs (`parseJSON`, `isEncodedJSONNumber`, `deepCopy`, `Parameter*`, `EventStream.listenOneShot`, ...) are used.
+  - Updated `async_extension` from ^1.2.22 to ^1.2.24.
+  - Updated `web` from ^1.1.1 to ^1.1.2.
+  - Updated `test` from ^1.32.0 to ^1.33.0.
+  - Updated `pubspec_parse` from ^1.6.0 to ^1.7.0.
+  - Updated `coverage` from ^1.15.1 to ^1.16.0.
+
 ## 3.0.2
 
 - `IntlLocale.onDefineDefaultLocale`: fixed a `TypeError` on every access. The getter cast the internal
