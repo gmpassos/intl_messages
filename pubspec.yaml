@@ -1,6 +1,6 @@
 name: intl_messages
 description: Simple and easy internationalization and localization messages framework for Dart (integrated with package 'intl') and translation tools (integrated with OpenAI and ChatGPT).
-version: 3.0.3
+version: 3.0.4
 homepage: https://github.com/gmpassos/intl_messages
 
 environment:
@@ -26,7 +26,7 @@ dev_dependencies:
   test: ^1.33.0
   pubspec_parse: ^1.7.0
   dependency_validator: ^5.1.0
-  coverage: ^1.16.0
+  coverage: ^1.16.2
 
 
 #dependency_overrides:

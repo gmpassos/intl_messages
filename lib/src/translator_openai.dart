@@ -12,9 +12,13 @@ class TranslatorOpenAI extends Translator {
   /// OpenAI API-Key.
   final String apiKey;
 
-  static const defaultModel = 'gpt-4.1-mini';
+  /// The default OpenAI model: `gpt-6-luna` (previously `gpt-4.1-mini`).
+  ///
+  /// Replaces the older small models (`gpt-4o-mini` and `gpt-5-mini` are
+  /// deprecated).
+  static const defaultModel = 'gpt-6-luna';
 
-  /// Model name. Default: `gpt-4.1-mini`
+  /// Model name. Default: [defaultModel] (`gpt-6-luna`).
   final String model;
 
   @override
@@ -75,7 +79,11 @@ class TranslatorOpenAI extends Translator {
       return translation1;
     }
 
-    var (instruction: inst2, prompt: prompt2) = _buildPrompt2(toLanguage, blk);
+    var (instruction: inst2, prompt: prompt2) = _buildPrompt2(
+      toLanguage,
+      blk,
+      headerKey,
+    );
 
     var content2 = await prompt(prompt2, instruction: inst2);
     if (content2 == null || content2.isEmpty) return null;
@@ -130,13 +138,15 @@ class TranslatorOpenAI extends Translator {
     int id,
   ) {
     var notTranslated = entries.entries.where((e) {
-      var k = e.key;
-      var m = entries[k]?.trim().toLowerCase();
-      var t = translation[k]?.trim().toLowerCase();
+      var m = e.value.trim().toLowerCase();
+      var t = translation[e.key]?.trim().toLowerCase();
 
-      if (t == null || t.isEmpty) {
-        if (m != null && m.isNotEmpty) return false;
-      }
+      // An empty message has nothing to translate.
+      if (m.isEmpty) return false;
+      // Missing or empty: e.g. a truncated response. Reported, so that
+      // `translateBlock` retries with the second prompt.
+      if (t == null || t.isEmpty) return true;
+      // Unchanged text: the model echoed the source.
       return m == t;
     }).toList();
 
@@ -161,15 +171,19 @@ class TranslatorOpenAI extends Translator {
     prompt: blk,
   );
 
+  /// The second (retry) prompt: [blk] preceded by a `<headerKey>=message`
+  /// example line. [headerKey] is `key` unless an entry already uses that
+  /// key (see `translateBlock`), so the header can't collide with an entry.
   ({String instruction, String prompt}) _buildPrompt2(
     String language,
     String blk,
+    String headerKey,
   ) {
     return (
       instruction:
           'Split the text below in lines, then translate to $language the text in each line after "=", preserving key before "=". Respond keeping the same format:',
       prompt:
-          'key=message\n'
+          '$headerKey=message\n'
           '$blk\n',
     );
   }
@@ -197,10 +211,20 @@ class TranslatorOpenAI extends Translator {
         .nonNulls
         .toList();
 
-    if (entries2.every((e) => e.key == 'key' || e.key == 'translation')) {
+    // Some responses come as alternating `key=<k>` / `translation=<t>` lines
+    // instead of `<k>=<t>`: re-pair them. Skipped when the source itself has
+    // `key`/`translation` message keys, since plain `<k>=<t>` lines for those
+    // would be mistaken for pairs (and their translations lost).
+    final sourceHasPairKeys =
+        entries.containsKey('key') || entries.containsKey('translation');
+
+    if (!sourceHasPairKeys &&
+        entries2.every((e) => e.key == 'key' || e.key == 'translation')) {
       var entries3 = <MapEntry<String, String>>[];
 
-      for (var i = 0; i < entries2.length; i += 2) {
+      // `i + 1 < length`: an odd line count (a truncated response) must not
+      // read past the end; the unpaired last line is dropped.
+      for (var i = 0; i + 1 < entries2.length; i += 2) {
         var e1 = entries2[i];
         var e2 = entries2[i + 1];
 
@@ -215,6 +239,9 @@ class TranslatorOpenAI extends Translator {
         }
       }
 
+      // Always replaced, even when nothing paired up (e.g. only echoed
+      // `key=` lines): keeping the raw lines would let the positional
+      // fallback below map key names onto the entries as "translations".
       entries2 = entries3;
     }
 
