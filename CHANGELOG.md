@@ -3,8 +3,13 @@
 - `TranslatorOpenAI`:
   - Updated `defaultModel` from `gpt-4.1-mini` to `gpt-6-luna` (`gpt-4o-mini` and `gpt-5-mini` are deprecated).
   - `parseResult`: fixed a `RangeError` when a response has an odd number of `key=`/`translation=` lines (a
-    truncated response, or a single entry whose message key is literally `key`). The unpaired line is ignored,
-    and lines that pair up into nothing are kept as plain `<key>=<message>` entries.
+    truncated response, or a single entry whose message key is literally `key`); the unpaired line is dropped.
+  - `parseResult`: no longer re-pairs `key=`/`translation=` lines when the source entries themselves use the
+    message keys `key` or `translation`, whose translations were lost.
+  - `translateBlock`: the second prompt's `key=message` header now uses the collision-free header key that was
+    already computed (`key__0`, ... when an entry is named `key`) but never used.
+  - `validateTranslation`: a missing or empty translation of a non-empty message is now reported, so a truncated
+    response triggers the second prompt instead of silently dropping entries; an empty message is never reported.
 
 - Tests:
   - Added offline `TranslatorOpenAI` tests (defaults, `parseResult`, `validateTranslation`, `translateBlock`

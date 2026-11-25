@@ -97,10 +97,32 @@ void main() {
           equals({'a': 'Un'}),
         );
 
-        // A single entry whose message key is literally `key`.
+        // Only echoed `key=` lines: nothing pairs, and the key names must not
+        // come back (positionally) as translations.
+        expect(
+          t.parseResult({'a': 'One', 'b': 'Two'}, 'key=a\nkey=b'),
+          isEmpty,
+        );
+      });
+
+      test('message keys `key`/`translation` are not re-paired', () {
         expect(
           t.parseResult({'key': 'Key'}, 'key=Clé'),
           equals({'key': 'Clé'}),
+        );
+        expect(
+          t.parseResult({
+            'key': 'Key',
+            'translation': 'Translation',
+          }, 'key=Clé\ntranslation=Traduction'),
+          equals({'key': 'Clé', 'translation': 'Traduction'}),
+        );
+        // The second prompt's `key=message` header echoed back:
+        expect(
+          t.parseResult({
+            'translation': 'Translation',
+          }, 'key=message\ntranslation=Traduction'),
+          equals({'translation': 'Traduction'}),
         );
       });
 
@@ -139,11 +161,20 @@ void main() {
         expect(logs.single, startsWith('NOT TRANSLATED[7] KEYS>'));
       });
 
-      test('missing translation is not reported', () {
+      test('missing or empty translation is reported', () {
         expect(
-          t.validateTranslation({'a': 'One', 'b': 'Two'}, {'a': 'Un'}, 1),
-          isNull,
+          t.validateTranslation(
+            {'a': 'One', 'b': 'Two', 'c': 'Three'},
+            {'a': 'Un', 'c': ' '},
+            1,
+          ),
+          equals(['b', 'c']),
         );
+      });
+
+      test('empty message needs no translation', () {
+        expect(t.validateTranslation({'a': ' '}, {}, 1), isNull);
+        expect(t.validateTranslation({'a': ''}, {'a': ''}, 1), isNull);
       });
     });
 
@@ -204,9 +235,42 @@ void main() {
           false,
         );
 
-        // `c` was never translated, so it is left out of the result:
-        expect(r, equals({'a': 'Un', 'b': 'Deux'}));
+        // `c` was never translated: returned as the model gave it.
+        expect(r, equals({'a': 'Un', 'b': 'Deux', 'c': 'Three'}));
         expect(logs, contains('FIXED TRANSLATION[3]>'));
+        expect(logs, contains('** NOT TRANSLATED KEY> c: Three'));
+      });
+
+      test('truncated first response: retried', () async {
+        var t = _FakeTranslatorOpenAI(['a=Un', 'a=Un\nb=Deux']);
+
+        var r = await t.translateBlock(
+          {'a': 'One', 'b': 'Two'},
+          en,
+          fr,
+          'English',
+          'French',
+          false,
+        );
+
+        expect(r, equals({'a': 'Un', 'b': 'Deux'}));
+        expect(t.prompts, hasLength(2));
+      });
+
+      test('second prompt header avoids an entry named `key`', () async {
+        var t = _FakeTranslatorOpenAI(['key=Key', 'key=Clé']);
+
+        var r = await t.translateBlock(
+          {'key': 'Key'},
+          en,
+          fr,
+          'English',
+          'French',
+          false,
+        );
+
+        expect(r, equals({'key': 'Clé'}));
+        expect(t.prompts[1].prompt, equals('key__0=message\nkey=Key\n'));
       });
 
       test('empty or null responses', () async {
