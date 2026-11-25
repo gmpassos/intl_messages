@@ -12,9 +12,12 @@ class TranslatorOpenAI extends Translator {
   /// OpenAI API-Key.
   final String apiKey;
 
-  static const defaultModel = 'gpt-4.1-mini';
+  /// The default OpenAI model: `gpt-6-luna`.
+  ///
+  /// The earlier small models (`gpt-4o-mini`, `gpt-5-mini`) are deprecated.
+  static const defaultModel = 'gpt-6-luna';
 
-  /// Model name. Default: `gpt-4.1-mini`
+  /// Model name. Default: [defaultModel] (`gpt-6-luna`).
   final String model;
 
   @override
@@ -197,10 +200,15 @@ class TranslatorOpenAI extends Translator {
         .nonNulls
         .toList();
 
+    // Some responses come as alternating `key=<k>` / `translation=<t>` lines
+    // instead of `<k>=<t>`: re-pair them.
     if (entries2.every((e) => e.key == 'key' || e.key == 'translation')) {
       var entries3 = <MapEntry<String, String>>[];
 
-      for (var i = 0; i < entries2.length; i += 2) {
+      // `i + 1 < length`: an odd line count (a truncated response, or a
+      // single entry whose message key is literally `key`) must not read
+      // past the end; the unpaired last line is ignored here.
+      for (var i = 0; i + 1 < entries2.length; i += 2) {
         var e1 = entries2[i];
         var e2 = entries2[i + 1];
 
@@ -215,7 +223,11 @@ class TranslatorOpenAI extends Translator {
         }
       }
 
-      entries2 = entries3;
+      // Nothing re-paired: the lines were plain `<k>=<t>` entries whose
+      // message keys happen to be `key`/`translation`, so keep them as-is.
+      if (entries3.isNotEmpty) {
+        entries2 = entries3;
+      }
     }
 
     var map = Map<String, String>.fromEntries(entries2);

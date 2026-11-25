@@ -1,3 +1,20 @@
+## 3.0.4
+
+- `TranslatorOpenAI`:
+  - Updated `defaultModel` from `gpt-4.1-mini` to `gpt-6-luna` (`gpt-4o-mini` and `gpt-5-mini` are deprecated).
+  - `parseResult`: fixed a `RangeError` when a response has an odd number of `key=`/`translation=` lines (a
+    truncated response, or a single entry whose message key is literally `key`). The unpaired line is ignored,
+    and lines that pair up into nothing are kept as plain `<key>=<message>` entries.
+
+- Tests:
+  - Added offline `TranslatorOpenAI` tests (defaults, `parseResult`, `validateTranslation`, `translateBlock`
+    retry/merge paths), using a subclass that answers `prompt` from scripted responses.
+  - Renamed `translator_test_dart.dart` to `translator_in_memory_test.dart`: the old name lacked the `_test.dart`
+    suffix, so the `TranslatorInMemory` test never ran.
+
+- Dependencies:
+  - Updated `coverage` from ^1.16.0 to ^1.16.2 (dev; bug fixes only, no adjustments needed).
+
 ## 3.0.3
 
 - Dependencies:
